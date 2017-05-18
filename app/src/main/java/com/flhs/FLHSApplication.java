@@ -15,6 +15,7 @@ import com.parse.PushService;
 import com.parse.SaveCallback;
 
 import android.app.Application;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class FLHSApplication extends Application {
+    private boolean OVERRIDE_SIGNED_IN = true;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -42,5 +44,13 @@ public class FLHSApplication extends Application {
         // Optionally enable public read access.
         // defaultACL.setPublicReadAccess(true);
         ParseACL.setDefaultACL(defaultACL, true);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("signInSuccess", 0);
+        boolean successful = sharedPreferences.getBoolean("success", false);
+        if (!successful || OVERRIDE_SIGNED_IN){
+            Intent signIn = new Intent(this, SignInActivity.class);
+            signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(signIn);
+        }
     }
 }

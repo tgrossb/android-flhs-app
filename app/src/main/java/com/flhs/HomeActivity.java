@@ -274,6 +274,3 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
 
 
 }
-
-
-

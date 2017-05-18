@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="student_digit_6" type="id"/>
+    <item name="student_digit_2" type="id"/>
+    <item name="student_digit_3" type="id"/>
+    <item name="student_digit_4" type="id"/>
+    <item name="student_digit_5" type="id"/>
+</resources>
