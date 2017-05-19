@@ -15,22 +15,19 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
-import java.util.Set;
-
 /**
  * Created by Theo Grossberndt on 5/17/17.
  */
 
 public class SignInActivity extends Activity {
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_in);
         makeStudentIDField();
         findViewById(R.id.signIn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("SignIn", "onClick called");
                 int studentID = readStudentID();
                 String email = ((EditText)findViewById(R.id.email)).getText().toString();
                 String password = ((EditText)findViewById(R.id.password)).getText().toString();
@@ -41,11 +38,18 @@ public class SignInActivity extends Activity {
                     Log.i("SignIn", "Bad sign in");
                 } else {
                     Log.i("SignIn","Good sign in");
-                    SharedPreferences.Editor editor = getSharedPreferences("signInSuccess", 0).edit();
+                    SharedPreferences.Editor editor = getSharedPreferences(
+                            getResources().getString(R.string.signed_in_loc), 0).edit();
                     editor.putBoolean("success", true);
                     editor.apply();
 
-                    SharedPreferences.Editor saveData = getSharedPreferences("***CONFIDENTIAL***", 0).edit();
+                    SharedPreferences.Editor saveData = getSharedPreferences(
+                            getResources().getString(R.string.student_info_loc), 0).edit();
+                    saveData.putString("studentEmail", email);
+                    saveData.putString("studentPassword", password);
+                    saveData.putInt("studentID", studentID);
+                    saveData.apply();
+
                     Intent goHome = new Intent(SignInActivity.this, HomeActivity.class);
                     goHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(goHome);
@@ -81,11 +85,13 @@ public class SignInActivity extends Activity {
                     String cont = digits[finalC].getText().toString();
                     if(cont.length() == 1 && finalC < 4)
                         digits[finalC+1].requestFocus();
-                    else if (cont.length() == 0 && finalC > 0)
+                    else if (cont.length() == 0 && before == 0 && finalC > 0)
                         digits[finalC-1].requestFocus();
+                    else if (cont.length() == 0 && before != 0)
+                        digits[finalC].setText("");
                 }
 
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                public void beforeTextChanged(CharSequence s, int start, int count, int after){}
                 public void afterTextChanged(Editable s){}
             });
         }
