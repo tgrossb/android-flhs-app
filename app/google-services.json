@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "377257851199",
+    "project_id": "flhs-info"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377257851199:android:e8ce306c15a68985",
+        "android_client_info": {
+          "package_name": "com.flhs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "377257851199-mrs5kk175iv9t328ub89qrseu01e1hnf.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "377257851199-a95b5j35ock4gan3lok9f2rp3jg3dc1l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flhs",
+            "certificate_hash": "18a998c18497c3bfc4cf9f486c6bb44b7d1f5c58"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsrYefgk2aEtmtPUzLIM4QY170EWmuHlo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

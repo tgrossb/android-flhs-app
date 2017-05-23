@@ -271,6 +271,4 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         mProgress.setVisibility(ProgressBar.INVISIBLE);
 
     }
-
-
 }

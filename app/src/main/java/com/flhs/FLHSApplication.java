@@ -24,7 +24,8 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class FLHSApplication extends Application {
-    private boolean OVERRIDE_SIGNED_IN = true;
+    private boolean FORCE_SIGN_IN = true;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -47,7 +48,7 @@ public class FLHSApplication extends Application {
 
         SharedPreferences sharedPreferences = getSharedPreferences("signInSuccess", 0);
         boolean successful = sharedPreferences.getBoolean("success", false);
-        if (!successful || OVERRIDE_SIGNED_IN){
+        if (!successful || FORCE_SIGN_IN){
             Intent signIn = new Intent(this, SignInActivity.class);
             signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(signIn);
