@@ -27,15 +27,19 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
  * Created by Theo Grossberndt on 5/17/17.
+ *
+ * As of 5/23/17, the google sign in is not yet working, but use no for the email and pass
+ * for the password to get past the sign in.  Or, never get to the sign in by disabling in
+ * FLHSActivity.
  */
 
-public class SignInActivity extends Activity implements BadSignInFragment.SignInCallback {
+public class SignInActivity extends AppCompatActivity implements BadSignInFragment.SignInCallback {
     private GoogleApiClient googleClient;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-//        setTheme(R.style.AppCompatTheme);
+        setTheme(R.style.AppCompatTheme);
         setContentView(R.layout.sign_in);
         findViewById(R.id.signIn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,12 +53,12 @@ public class SignInActivity extends Activity implements BadSignInFragment.SignIn
                .requestEmail()
                .build();
         googleClient = new GoogleApiClient.Builder(this)
-//                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-//                    @Override
-//                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-//                        Log.i("Connection", "No connection");
-//                    }
-//                })
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        Log.i("Connection", "No connection");
+                    }
+                })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         findViewById(R.id.signInWithGoogle).setOnClickListener(new View.OnClickListener() {
@@ -75,8 +79,20 @@ public class SignInActivity extends Activity implements BadSignInFragment.SignIn
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1738){
             GoogleSignInResult res = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            GoogleSignInAccount account = res.getSignInAccount();
-            handleSignIn(res.isSuccess(), account.getEmail());
+            GoogleSignInAccount account = null;
+            if (res.isSuccess())
+                account = res.getSignInAccount();
+            else
+                Log.i("Nooo", "Sign in not successful");
+            String email = "this should not be shown";
+            try {
+                email = account.getEmail();
+            } catch (NullPointerException e){
+                Log.i("Crap", "Null pointer trying to get email.  Here is stack trace:");
+                e.printStackTrace();
+            }
+            handleSignIn(res.isSuccess(), email);
+            googleClient.clearDefaultAccountAndReconnect();
         }
     }
 
@@ -107,6 +123,7 @@ public class SignInActivity extends Activity implements BadSignInFragment.SignIn
         }
     }
 /**
+    https://github.com/kadymuhammad/SignIn-with-Google-Demo/blob/master/app/src/main/java/muhammad/ibrahim/kady/sign_in_with_google_demo/MainActivity.java
     Unfortunately, this is not really needed now. But it's so beautiful that I want to keep it.
 
     public void makeStudentIDField(){
