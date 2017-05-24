@@ -26,11 +26,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
- * Created by Theo Grossberndt on 5/17/17.
- *
- * As of 5/23/17, the google sign in is not yet working, but use no for the email and pass
- * for the password to get past the sign in.  Or, never get to the sign in by disabling in
- * FLHSActivity.
+ * Created by Theo Grossberndt on 5/17/17
  */
 
 public class SignInActivity extends AppCompatActivity implements BadSignInFragment.SignInCallback {
