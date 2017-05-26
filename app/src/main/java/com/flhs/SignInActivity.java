@@ -42,7 +42,7 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
             public void onClick(View view) {
                 String email = ((EditText) findViewById(R.id.email)).getText().toString();
                 String password = ((EditText) findViewById(R.id.password)).getText().toString();
-                handleSignIn(email.equals("no") && password.equals("pass"), email);
+                handleSignIn(email.equals("no") && password.equals("pass"), email, "");
             }
         });
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -87,7 +87,7 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
                 Log.i("Crap", "Null pointer trying to get email.  Here is stack trace:");
                 e.printStackTrace();
             }
-            handleSignIn(res.isSuccess(), email);
+            handleSignIn(res.isSuccess(), email, res.getSignInAccount().getDisplayName());
             googleClient.clearDefaultAccountAndReconnect();
         }
     }
@@ -96,7 +96,7 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
         ((EditText) findViewById(R.id.password)).setText("");
     }
 
-    public void handleSignIn(boolean goodSignIn, String email) {
+    public void handleSignIn(boolean goodSignIn, String email, String name) {
         //Handle sign in
         if (!goodSignIn) {
             BadSignInFragment badSignIn = new BadSignInFragment();
@@ -110,7 +110,8 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
 
             SharedPreferences.Editor saveData = getSharedPreferences(
                     getResources().getString(R.string.student_info_loc), 0).edit();
-            saveData.putString("studentEmail", email);
+            saveData.putString("email", email);
+            saveData.putString("name", name);
             saveData.apply();
 
             Intent goHome = new Intent(SignInActivity.this, HomeActivity.class);

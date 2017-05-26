@@ -3,6 +3,7 @@ package com.flhs;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -19,7 +20,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -100,7 +103,7 @@ public class FLHSActivity extends Activity {
             ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
             textView.setText(values[position]);
             switch (position) {
-                case 0:
+                case 1:
                     if (getTitle().equals("Announcements")) {
                         imageView.setImageResource(R.drawable.announcements_icon_red);
                         textView.setTextColor(Color.RED);
@@ -108,7 +111,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.announcements_icon_black);
                     }
                     break;
-                case 1:
+                case 2:
                     if (getTitle().equals("Calendar")) {
                         textView.setTextColor(Color.RED);
                         imageView.setImageResource(R.drawable.calendar_icon_red);
@@ -116,7 +119,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.calendar_icon_black);
                     }
                     break;
-                case 2:
+                case 3:
                     if (getTitle().equals("Lunch Menu")) {
                         imageView.setImageResource(R.drawable.lunch_menu_red);
                         textView.setTextColor(Color.RED);
@@ -124,7 +127,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.lunch_menu_black);
                     }
                     break;
-                case 3:
+                case 4:
                     if (getTitle().equals("Sports")) {
                         imageView.setImageResource(R.drawable.sports_icon_red);
                         textView.setTextColor(Color.RED);
@@ -132,7 +135,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.sports_icon_black);
                     }
                     break;
-                case 4:
+                case 5:
                     if (getTitle().equals("Bell Schedules")) {
                         imageView.setImageResource(R.drawable.schedule_red);
                         textView.setTextColor(Color.RED);
@@ -216,6 +219,8 @@ public class FLHSActivity extends Activity {
 
 
         DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navlv.addHeaderView(generateUserCard());
+
         //mDrawerToggle = new ActionBarDrawerToggle(
         //        this,                  /* host Activity */
         //        mDrawerLayout,         /* DrawerLayout object */
@@ -244,7 +249,6 @@ public class FLHSActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
     }
 
-
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -258,5 +262,28 @@ public class FLHSActivity extends Activity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    public LinearLayout generateUserCard(){
+        SharedPreferences userInfo = getSharedPreferences(getResources().getString(R.string.student_info_loc), 0);
+        LinearLayout userCard = new LinearLayout(getApplicationContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 300);
+        userCard.setLayoutParams(params);
+        userCard.setOrientation(LinearLayout.VERTICAL);
+        userCard.setBackground(getResources().getDrawable(R.drawable.user_card_background));
 
+        TextView userName = new TextView(getApplicationContext());
+        userName.setText(userInfo.getString("name", ""));
+        userName.setTextSize(25);
+        userCard.addView(userName);
+
+        String email = userInfo.getString("email", "");
+
+        TextView userEmail = new TextView(getApplicationContext());
+        userEmail.setText(email);//.substring(0, email.indexOf("@")));
+        userEmail.setTextColor(getResources().getColor(R.color.white));
+        userEmail.setTextSize(15);
+        userCard.addView(userEmail);
+        Log.i("Tag", userInfo.getString("email", "nah, no string"));
+        return userCard;
+    }
 }
