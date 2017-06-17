@@ -16,6 +16,5 @@ public class AboutActivity extends FLHSActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         SetupNavDrawer();
-
     }
 }

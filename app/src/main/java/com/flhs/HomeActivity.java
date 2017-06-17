@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.flhs.utils.AccountInfo;
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.ListViewHolderItem;
 import com.flhs.utils.ParserA;
@@ -16,6 +17,8 @@ import com.parse.ParseConfig;
 import com.parse.ParseException;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.DialogFragment;
@@ -34,11 +37,12 @@ import android.widget.TextView;
 
 
 public class HomeActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener {
+    private boolean force = false;
     ProgressBar mProgress;
     private static ParserA parser = new ParserA();
-    public static ListView eventstodaylv;
-    public static TextView txtdate;
-    public static ListView sporteventstodaylv;
+    public ListView eventstodaylv;
+    public TextView txtdate;
+    public ListView sporteventstodaylv;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -49,6 +53,14 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Before anything happens, check if the user is signed in
+        if (!AccountInfo.isSignedIn(this) || force){
+            Intent signIn = new Intent(this, SignInActivity.class);
+            signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(signIn);
+        }
+
         setContentView(R.layout.activity_home);
         SetupNavDrawer();
         mProgress = (ProgressBar) findViewById(R.id.progress_bar);
@@ -89,7 +101,7 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
     }
 
     void tryToConnect() {
-        if (isOnline()) {
+        if (SignInActivity.isConnectedToInternet(this)) {
             //Runs the loader thread!
             new EventsLoaderThread().execute();
         } else {

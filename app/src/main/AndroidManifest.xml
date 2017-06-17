@@ -73,6 +73,10 @@
             android:label="@string/title_activity_lunch_menu" >
         </activity>
         <activity
+            android:name=".MyAccountActivity"
+            android:label="@string/title_activity_my_account">
+        </activity>
+        <activity
             android:name="com.flhs.SportsNavigationActivity"
             android:label="@string/title_activity_sports_navigation" >
         </activity>

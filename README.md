@@ -1,7 +1,13 @@
-#GOOGLE SIGN IN IS WORKING
-#AHHHHHHHHHHHHHHHHHHHH
+## Status
+The current breaking feature envolves associating the user with their student account to implement features that require student 
+identification.  Right now, the user is prompted for a sign in if they are not signed in yet with their Google account or with their student 
+email and password.  The student email sign in doesn't work yet because I have not implemented an authorization method, so that will not work 
+yet.  The AccountInfo class keeps track of all the account information in local storage so the user doesn't have to be connected to wifi when 
+the app starts.  Eventualy, I will implement a thing where if the user is connected to wifi when the app starts AccountInfo would update to 
+show the current state of the account, but that is not writen yet.  The "My Account" page in the nav drawer shows the profile picture, the 
+display name, the email, the student ID, and a background image.
 
-##AndroidFLHSApp Directory Organization
+## AndroidFLHSApp Directory Organization
 This is the source code for the unpackaged Android App.
 In the app folder...
 The res directory (resources) contains the XML and really all other media for the APK besides the java class files.
@@ -13,7 +19,7 @@ that were were made for the classes in com.flhs.
 The com.flhs classes are the Activities. Each activity is a seperate section of the app. To learn about activities.
 To learn more about how this all works, go to the Android Developer Website and start learning: http://developer.android.com/training/index.html
 
-##How to use Parse Config... (remember, this affects ALL USERS!!!)
+## How to use Parse Config... (remember, this affects ALL USERS!!!)
 Sign into parse with the push@student.bcsdny.org account.
 Go to "Core", then "Config"
 The LunchMenuURL Parameter is the URL we want to use for the Lunch Menu (http://bcsdny.org/documents.cfm?id=14.608&subid=630)

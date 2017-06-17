@@ -10,7 +10,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.flhs.utils.AccountInfo;
 import com.parse.ConfigCallback;
 import com.parse.ParseConfig;
 import com.parse.ParseException;
@@ -43,22 +43,26 @@ public class FLHSActivity extends Activity {
         public void onItemClick(AdapterView parent, View view, int position, long id) {
             switch (position) {
                 case 0:
+                    Intent startMyaccount = new Intent(getApplicationContext(), MyAccountActivity.class);
+                    startActivity(startMyaccount);
+                    break;
+                case 1:
                     Intent announcementsActivityExecute = new Intent(getApplicationContext(), AnnouncementActivity.class);
                     startActivity(announcementsActivityExecute);
                     break;
-                case 1:
+                case 2:
                     Intent calendarActivityExecute = new Intent(getApplicationContext(), CalendarActivity.class);
                     startActivity(calendarActivityExecute);
                     break;
-                case 2:
+                case 3:
                     Intent LunchMenuActivityExecute = new Intent(getApplicationContext(), LunchMenuActivity.class);
                     startActivity(LunchMenuActivityExecute);
                     break;
-                case 3:
+                case 4:
                     Intent SportsNavigationActivityExecute = new Intent(getApplicationContext(), TempSportsActivity.class);
                     startActivity(SportsNavigationActivityExecute);
                     break;
-                case 4:
+                case 5:
                     ParseConfig.getInBackground(new ConfigCallback() {
                         @Override
                         public void done(ParseConfig config, ParseException e) {
@@ -101,6 +105,14 @@ public class FLHSActivity extends Activity {
             textView.setText(values[position]);
             switch (position) {
                 case 0:
+                    if (getTitle().equals("My Account")) {
+                        imageView.setImageResource(R.drawable.ic_launcher);
+                        textView.setTextColor(Color.RED);
+                    } else {
+                        imageView.setImageResource(R.drawable.fox_lane_logo);
+                    }
+                    break;
+                case 1:
                     if (getTitle().equals("Announcements")) {
                         imageView.setImageResource(R.drawable.announcements_icon_red);
                         textView.setTextColor(Color.RED);
@@ -108,7 +120,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.announcements_icon_black);
                     }
                     break;
-                case 1:
+                case 2:
                     if (getTitle().equals("Calendar")) {
                         textView.setTextColor(Color.RED);
                         imageView.setImageResource(R.drawable.calendar_icon_red);
@@ -116,7 +128,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.calendar_icon_black);
                     }
                     break;
-                case 2:
+                case 3:
                     if (getTitle().equals("Lunch Menu")) {
                         imageView.setImageResource(R.drawable.lunch_menu_red);
                         textView.setTextColor(Color.RED);
@@ -124,7 +136,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.lunch_menu_black);
                     }
                     break;
-                case 3:
+                case 4:
                     if (getTitle().equals("Sports")) {
                         imageView.setImageResource(R.drawable.sports_icon_red);
                         textView.setTextColor(Color.RED);
@@ -132,7 +144,7 @@ public class FLHSActivity extends Activity {
                         imageView.setImageResource(R.drawable.sports_icon_black);
                     }
                     break;
-                case 4:
+                case 5:
                     if (getTitle().equals("Bell Schedules")) {
                         imageView.setImageResource(R.drawable.schedule_red);
                         textView.setTextColor(Color.RED);
@@ -152,7 +164,7 @@ public class FLHSActivity extends Activity {
 
 
     String[] MainActivities = {
-            "Announcements", "Calendar", "Lunch Menu", "Sports", "Bell Schedules"
+            "My Account", "Announcements", "Calendar", "Lunch Menu", "Sports", "Bell Schedules"
     };
     NavDrawerArrayAdapter navDrawerLvAdapter;
 

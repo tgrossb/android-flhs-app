@@ -1,22 +1,23 @@
 package com.flhs;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import com.flhs.utils.AccountInfo;
 import com.flhs.utils.BadSignInFragment;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -24,6 +25,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+
+import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 
 /**
  * Created by Theo Grossberndt on 5/17/17
@@ -36,23 +47,25 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
     protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setTheme(R.style.AppCompatTheme);
-        setContentView(R.layout.sign_in);
+        setContentView(R.layout.activity_sign_in);
         findViewById(R.id.signIn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String email = ((EditText) findViewById(R.id.email)).getText().toString();
                 String password = ((EditText) findViewById(R.id.password)).getText().toString();
-                handleSignIn(email.equals("no") && password.equals("pass"), email);
+                handleSignIn(email.equals("no") && password.equals("pass"), BadSignInFragment.BAD_EMAIL_SIGN_IN,
+                        "tgrossberndt@student.bcsdny.org", "Theo Grossberndt", null);
             }
         });
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+               .requestProfile()
                .requestEmail()
                .build();
         googleClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Log.i("Connection", "No connection");
+                        Toast.makeText(getApplicationContext(), "No connection, sign in failed", Toast.LENGTH_LONG).show();
                     }
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
@@ -66,8 +79,18 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
     }
 
     public void signInWithGoogle(){
-        Intent startSignIn = Auth.GoogleSignInApi.getSignInIntent(googleClient);
-        startActivityForResult(startSignIn, 1738 /* Ay, I'm like hey whats up hello */);
+        if (!isConnectedToInternet(this)){
+            BadSignInFragment badSignInFragment = new BadSignInFragment();
+            Bundle args = new Bundle();
+            args.putInt("cause", BadSignInFragment.BAD_GOOGLE_SIGN_IN);
+            badSignInFragment.setArguments(args);
+            Toast.makeText(this, "Not connected, showing frag", Toast.LENGTH_LONG).show();
+            badSignInFragment.show(getFragmentManager(), "BadSignIn");
+        } else {
+            googleClient.clearDefaultAccountAndReconnect();
+            Intent startSignIn = Auth.GoogleSignInApi.getSignInIntent(googleClient);
+            startActivityForResult(startSignIn, 1738 /* Ay, I'm like hey whats up hello */);
+        }
     }
 
     @Override
@@ -75,19 +98,19 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1738){
             GoogleSignInResult res = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            GoogleSignInAccount account = null;
-            if (res.isSuccess())
-                account = res.getSignInAccount();
-            else
-                Log.i("Nooo", "Sign in not successful");
+            GoogleSignInAccount account = res.getSignInAccount();
             String email = "this should not be shown";
+            String dispName = "nor should this";
+            Uri picURI = null;
             try {
                 email = account.getEmail();
+                dispName = account.getDisplayName();
+                picURI = account.getPhotoUrl();
             } catch (NullPointerException e){
-                Log.i("Crap", "Null pointer trying to get email.  Here is stack trace:");
+                Log.i("Uh", "Null pointer getting email, disp name, and picURI.  Here's trace:");
                 e.printStackTrace();
             }
-            handleSignIn(res.isSuccess(), email);
+            handleSignIn(res.isSuccess(), BadSignInFragment.BAD_GOOGLE_SIGN_IN, email, dispName, picURI);
             googleClient.clearDefaultAccountAndReconnect();
         }
     }
@@ -96,30 +119,33 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
         ((EditText) findViewById(R.id.password)).setText("");
     }
 
-    public void handleSignIn(boolean goodSignIn, String email) {
+    public void handleSignIn(boolean goodSignIn, int cause, String email, String dispName, Uri picURI) {
         //Handle sign in
         if (!goodSignIn) {
             BadSignInFragment badSignIn = new BadSignInFragment();
+            Bundle args = new Bundle();
+            args.putInt("cause", cause);
+            badSignIn.setArguments(args);
             badSignIn.show(getFragmentManager(), "BadSignIn");
         } else {
-            Log.i("AHHHHHHH", "Good sign in with an email " + email);
-            SharedPreferences.Editor editor = getSharedPreferences(
-                    getResources().getString(R.string.signed_in_loc), 0).edit();
-            editor.putBoolean("success", true);
-            editor.apply();
-
-            SharedPreferences.Editor saveData = getSharedPreferences(
-                    getResources().getString(R.string.student_info_loc), 0).edit();
-            saveData.putString("studentEmail", email);
-            saveData.apply();
+            AccountInfo.signIn(this, email, dispName, 16154, picURI);
 
             Intent goHome = new Intent(SignInActivity.this, HomeActivity.class);
             goHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(goHome);
         }
     }
+
+
+
+    public static boolean isConnectedToInternet(Context context){
+        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo mobile = connectivityManager .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        return (wifi.isAvailable() && wifi.isConnectedOrConnecting() ||
+                (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
+    }
 /**
-    https://github.com/kadymuhammad/SignIn-with-Google-Demo/blob/master/app/src/main/java/muhammad/ibrahim/kady/sign_in_with_google_demo/MainActivity.java
     Unfortunately, this is not really needed now. But it's so beautiful that I want to keep it.
 
     public void makeStudentIDField(){

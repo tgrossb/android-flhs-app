@@ -1,5 +1,6 @@
 package com.flhs;
 
+import com.flhs.utils.AccountInfo;
 import com.parse.ConfigCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class FLHSApplication extends Application {
-    private boolean FORCE_SIGN_IN = true;
+    private boolean FORCE_SIGN_IN = false;
 
     @Override
     public void onCreate() {
@@ -45,13 +46,5 @@ public class FLHSApplication extends Application {
         // Optionally enable public read access.
         // defaultACL.setPublicReadAccess(true);
         ParseACL.setDefaultACL(defaultACL, true);
-
-        SharedPreferences sharedPreferences = getSharedPreferences("signInSuccess", 0);
-        boolean successful = sharedPreferences.getBoolean("success", false);
-        if (!successful || FORCE_SIGN_IN){
-            Intent signIn = new Intent(this, SignInActivity.class);
-            signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(signIn);
-        }
     }
 }
