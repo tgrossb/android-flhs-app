@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class FLHSApplication extends Application {
-    private boolean FORCE_SIGN_IN = true;
+    private boolean FORCE_SIGN_IN = false;
 
     @Override
     public void onCreate() {
