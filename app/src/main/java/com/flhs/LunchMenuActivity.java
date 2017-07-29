@@ -1,13 +1,20 @@
 package com.flhs;
 
+import com.flhs.utils.Database;
 import com.flhs.utils.Formatter;
-import com.parse.ParseConfig;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class LunchMenuActivity extends FLHSActivity {
     @Override
@@ -32,9 +39,7 @@ public class LunchMenuActivity extends FLHSActivity {
         settings.setJavaScriptEnabled(true);
         settings.setBuiltInZoomControls(true);
         settings.setDisplayZoomControls(true);
-        ParseConfig config = ParseConfig.getCurrentConfig();
-
-        LunchMenuPDFReader.loadUrl("http://docs.google.com/gview?embedded=true&url=" + config.getString("LunchMenuURL"));
+        LunchMenuPDFReader.loadUrl("http://docs.google.com/gview?embedded=true&url=" + new Database().getLunchMenuURL());
     }
 /*Just might be useful someday with UP navigation in Action Bar....
     **

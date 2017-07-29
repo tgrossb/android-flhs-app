@@ -1,7 +1,6 @@
 //Written by Drew Gregory..... 2/5/2014
 package com.flhs;
 
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,11 +10,10 @@ import com.flhs.utils.ListViewHolderItem;
 import com.flhs.utils.ParserA;
 import com.flhs.utils.SportEvent;
 import com.flhs.utils.eventobject;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.DialogFragment;
@@ -51,6 +49,7 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         SetupNavDrawer();
+
         mProgress = (ProgressBar) findViewById(R.id.progress_bar);
         //Sets listviews as "Loading...."
         eventstodaylv = (ListView) findViewById(R.id.eventsTodayListView);

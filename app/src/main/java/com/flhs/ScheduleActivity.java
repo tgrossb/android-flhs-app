@@ -1,10 +1,12 @@
 package com.flhs;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import com.flhs.utils.Database;
 import com.flhs.utils.DayPickerFragment;
 import com.flhs.utils.FLHSDatePicker;
 import com.flhs.utils.LunchPickerFragment;
@@ -31,9 +33,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.DayPickerListener, LunchPickerFragment.LunchPickerListener, DatePickerDialog.OnDateSetListener {
     private static String LUNCH_TYPE = "Lunch Type";
@@ -80,7 +79,7 @@ public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.
         SetupNavDrawer();
         content = (ListView) findViewById(R.id.contentListView);
         String[] loadScheduleStrings = {"You don't have school today!"};
-        ArrayAdapter<String> EmptySchedule = new ArrayAdapter<String>(ScheduleActivity.this, android.R.layout.simple_list_item_1, loadScheduleStrings);
+        ArrayAdapter<String> EmptySchedule = new ArrayAdapter<>(ScheduleActivity.this, android.R.layout.simple_list_item_1, loadScheduleStrings);
         content.setAdapter(EmptySchedule);
         prefs = getSharedPreferences(DAY_TYPE, MODE_PRIVATE);
         Date theCurrentTime = new Date();
@@ -92,23 +91,18 @@ public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.
             dayTypeEditor.putString("selMonth", mMonth);
             dayTypeEditor.putString("selDate", mDate);
         }
-        ParseConfig config = ParseConfig.getCurrentConfig();
-        scheduleType = config.getString("ScheduleType");
+
+        Database database = new Database();
+        scheduleType = database.getScheduleType();
         lunchType = getSharedPreferences(LUNCH_TYPE, MODE_PRIVATE);
         Button DayTitle = (Button) findViewById(R.id.DayTitle);
         if (!(prefs.getString("Last Time Day Changed", "0").equals(mDate))) {
             dateButton.setText(prefs.getString("selMonth", mMonth) + "/" + prefs.getString("selDate", mDate));
             boolean foundDate = false;
-            JSONArray jsonDays = config.getJSONArray("WhatDay", null);
-            if (jsonDays != null) {
-                for (int index = 0; index < jsonDays.length(); index++) {
-                    String jsonString = null;
-                    try {
-                        jsonString = jsonDays.get(index).toString();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        dayTypeEditor.putString(DAY_TYPE, "Unknown");
-                    }
+
+            ArrayList<String> days = database.getWhatDay();
+            if (days != null) {
+                for (String jsonString : days) {
                     String date = null;
                     try {
                         date = jsonString.substring(0, jsonString.indexOf(":"));
@@ -197,19 +191,10 @@ public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.
                 Button switchLunch = (Button) findViewById(R.id.switch_lunch);
                 switchLunch.setVisibility(View.INVISIBLE); //Switch this when you figure out lunch compatibility....
 
-                JSONArray jsonTimes = config.getJSONArray("SpecialDayTimes", null);
-                String[] TimeScheduleToPrint = new String[jsonTimes.length()];
-                JSONArray jsonCourses = config.getJSONArray("SpecialDayCourses", null);
-                String[] CourseScheduleToPrint = new String[jsonCourses.length()];
-                for (int index = 0; index < jsonTimes.length(); index++) {
-                    try {
-                        TimeScheduleToPrint[index] = jsonTimes.getString(index);
-                        CourseScheduleToPrint[index] = jsonCourses.getString(index);
-                    } catch (JSONException ex) {
-                        break;
-                    }
-                }
-                ScheduleAdapter adapter = new ScheduleAdapter(ScheduleActivity.this, CourseScheduleToPrint, TimeScheduleToPrint);
+                String[] timeSchedule = database.getSpecialDayTimes();
+                String[] courseSchedule = database.getSpecialDayCourses();
+
+                ScheduleAdapter adapter = new ScheduleAdapter(ScheduleActivity.this, courseSchedule, timeSchedule);
                 content.setAdapter(adapter);
                 break;
             }

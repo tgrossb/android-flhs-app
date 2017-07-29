@@ -40,10 +40,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.flhs.SignInActivity"
-            android:label="@string/title_activity_sign_in">
-        </activity>
-        <activity
             android:name="com.flhs.AboutActivity"
             android:label="@string/title_activity_about" >
         </activity>
