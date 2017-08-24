@@ -18,53 +18,17 @@ public class ParserA {
     final static int LATE_LUNCH = 2;
 
     public static String integerMonthToString(int month) {
-        String monthString;
-        switch (month) {
-            case 1:
-                monthString = "January";
-                break;
-            case 2:
-                monthString = "February";
-                break;
-            case 3:
-                monthString = "March";
-                break;
-            case 4:
-                monthString = "April";
-                break;
-            case 5:
-                monthString = "May";
-                break;
-            case 6:
-                monthString = "June";
-                break;
-            case 7:
-                monthString = "July";
-                break;
-            case 8:
-                monthString = "August";
-                break;
-            case 9:
-                monthString = "September";
-                break;
-            case 10:
-                monthString = "October";
-                break;
-            case 11:
-                monthString = "November";
-                break;
-            case 12:
-                monthString = "December";
-                break;
-            default:
-                monthString = "Invalid month";
-                break;
+        String[] months = {"January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+        try {
+            return months[month - 1];
+        } catch (IndexOutOfBoundsException e){
+            return "Invalid month";
         }
-        return monthString;
     }
 
     public static ArrayList<eventobject> parseEventsToday() {
-        ArrayList<eventobject> date = new ArrayList<eventobject>();
+        ArrayList<eventobject> date = new ArrayList<>();
         Document Magic;
         try {
             Magic = Jsoup.connect(new Formatter().getFLHSCalendarURL()).get();
@@ -172,37 +136,11 @@ public class ParserA {
     }
 
     public static String parseNumToDay(int day) {
-        switch (day) {
-            case 1:
-                return "A";
-            case 2:
-                return "B";
-            case 3:
-                return "C";
-            case 4:
-                return "D";
-            case 5:
-                return "E";
-            case 6:
-                return "1";
-            case 7:
-                return "2";
-            case 8:
-                return "3";
-            case 9:
-                return "4";
-            case 10:
-                return "5";
-            case 11:
-                return "Adv E";
-            case 12:
-                return "Adv 5";
-            case 13:
-                return "Collab E";
-            case 14:
-                return "Collab 5";
-            default:
-                return "Unknown";
+        String[] days = {"A", "B", "C", "D", "E", "1", "2", "3", "4", "5", "Adv E", "Adv 5", "Collab E", "Collab 5"};
+        try {
+            return days[day-1];
+        } catch (IndexOutOfBoundsException e){
+            return "Unknown";
         }
     }
 }

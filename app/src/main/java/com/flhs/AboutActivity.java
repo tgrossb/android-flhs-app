@@ -2,9 +2,6 @@
 */
 package com.flhs;
 
-import com.parse.ParseInstallation;
-import com.parse.PushService;
-
 import android.os.Bundle;
 import android.widget.Button;
 

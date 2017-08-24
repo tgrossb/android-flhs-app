@@ -23,22 +23,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
-
 /**
  * Created by Drew on 10/23/2014.
  */
 public class FLHSActivity extends Activity {
-    ActionBarDrawerToggle mDrawerToggle;
-
-
-
-    CharSequence title = getTitle();
+    private ActionBarDrawerToggle mDrawerToggle;
+    private CharSequence title = getTitle();
 
     class DrawerItemClickListener implements AdapterView.OnItemClickListener {
-
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {
             switch (position) {
@@ -59,24 +51,11 @@ public class FLHSActivity extends Activity {
                     startActivity(SportsNavigationActivityExecute);
                     break;
                 case 4:
-                    ParseConfig.getInBackground(new ConfigCallback() {
-                        @Override
-                        public void done(ParseConfig config, ParseException e) {
-                            if (e == null) {
-                            } else {
-                                config = ParseConfig.getCurrentConfig();
-                            }
-
-                            // Get the message from config or fallback to default value
-
-                        }
-                    });
                     Intent schedulesActivityExecute = new Intent(getApplicationContext(), ScheduleActivity.class);
                     startActivity(schedulesActivityExecute);
                     break;
                 default:
                     Toast.makeText(getApplicationContext(), "I don't know what happened....", Toast.LENGTH_LONG).show();
-
             }
         }
     }
@@ -147,20 +126,10 @@ public class FLHSActivity extends Activity {
         }
     }
 
-    public static final String appname = "FLHS Info";
-    ArrayAdapter<String> loadingAdapter;
-
-
-    String[] MainActivities = {
-            "Announcements", "Calendar", "Lunch Menu", "Sports", "Bell Schedules"
-    };
-    NavDrawerArrayAdapter navDrawerLvAdapter;
-
-
-    ListView navlv;
-
-    int SelectedNavDrawerItemIndex;
-
+    public static String[] MainActivities = {"Announcements", "Calendar", "Lunch Menu", "Sports", "Bell Schedules"};
+    public ArrayAdapter<String> loadingAdapter;
+    public NavDrawerArrayAdapter navDrawerLvAdapter;
+    public ListView navlv;
 
     public boolean isOnline() {
         ConnectivityManager connMgr = (ConnectivityManager)
@@ -173,8 +142,7 @@ public class FLHSActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String[] LoadingStrings = {"Loading events from the internet....."};
-        loadingAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, LoadingStrings);
-
+        loadingAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, LoadingStrings);
     }
 
 
@@ -257,6 +225,4 @@ public class FLHSActivity extends Activity {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
-
-
 }

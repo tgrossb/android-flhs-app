@@ -4,6 +4,7 @@ package com.flhs;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.ListViewHolderItem;
@@ -32,11 +33,11 @@ import android.widget.TextView;
 
 
 public class HomeActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener {
-    ProgressBar mProgress;
-    private static ParserA parser = new ParserA();
-    public static ListView eventstodaylv;
-    public static TextView txtdate;
-    public static ListView sporteventstodaylv;
+    private ProgressBar mProgress;
+    private ParserA parser = new ParserA();
+    public ListView eventstodaylv;
+    public TextView txtdate;
+    public ListView sporteventstodaylv;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -60,31 +61,13 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         sporteventstodaylv.setAdapter(loadingAdapter);
 
 
-        //Date Settings
-        Date dateconversion = new Date();//Set Date object as Calendar time.
-        SimpleDateFormat sf = new SimpleDateFormat("EE MMMM d, yyyy");//Day Of Week Month Date, Year
-        String datestring = sf.format(dateconversion);
-
-        String[] lvEventsArray = {"Event 1", "Event 2"};
+        //datestring is todays date formatted to be "DayOfWeek Month Day, Year"
+        String datestring = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US).format(new Date());
 
         //Current Date
         txtdate = (TextView) findViewById(R.id.dateHeader);
         txtdate.setText(datestring);
         tryToConnect();
-
-        /*ParseConfig.getInBackground(new ConfigCallback() {
-            @Override
-            public void done(ParseConfig config, ParseException e) {
-                if (e == null) {
-                } else {
-                    config = ParseConfig.getCurrentConfig();
-                }
-
-                // Get the message from config or fallback to default value
-
-            }
-        });*/
-
     }
 
     void tryToConnect() {
@@ -100,7 +83,6 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
     }
 
     class EventsLoaderThread extends AsyncTask<Void, Void, Void> {
-
         ProgressDialog pr = new ProgressDialog(HomeActivity.this);
         ArrayList<eventobject> todaysevents;
         ArrayList<SportEvent> sportEventsToday;
@@ -108,19 +90,13 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         @Override
         protected void onPreExecute() {
             mProgress.setVisibility(ProgressBar.VISIBLE);
-
-
         }
 
 
         @Override
         protected Void doInBackground(Void... arg0) {
-            //Events Today Section
-            todaysevents = parser.parseEventsToday();
-
-            //Sports News Today Section
-            sportEventsToday = parser.printSportsToday();
-
+            todaysevents = ParserA.parseEventsToday();
+            sportEventsToday = ParserA.printSportsToday();
             return null;
         }
 
@@ -131,11 +107,9 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
             String[] lvEventsArray = {"Couldn't connect to bcsdny.org......."};
             if (todaysevents != null) {
                 if (todaysevents.size() != 0) {
-
                     lvEventsArray = new String[todaysevents.size()];
-                    for (int lvEventsArrayIndex = 0; lvEventsArrayIndex < todaysevents.size(); lvEventsArrayIndex++) {
+                    for (int lvEventsArrayIndex = 0; lvEventsArrayIndex < todaysevents.size(); lvEventsArrayIndex++)
                         lvEventsArray[lvEventsArrayIndex] = todaysevents.get(lvEventsArrayIndex).eventsDesc[0] + "\n" + todaysevents.get(lvEventsArrayIndex).Date;
-                    }
                 }
                 if (todaysevents.size() == 0) {
                     lvEventsArray = new String[1];
@@ -182,41 +156,21 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
             EventsAdapter sporteventstodayadapter = new EventsAdapter(HomeActivity.this, lvSportEventsArray);
             sporteventstodaylv.setAdapter(sporteventstodayadapter);
 
-
-            /*View homeBox1 = findViewById(R.id.homebox1);
-            View homeBox2 = findViewById(R.id.homebox2);
-            TextView eventsToday = (TextView) findViewById(R.id.eventsToday);
-            ViewGroup.LayoutParams params = homeBox1.getLayoutParams();
-            params.height = (int) (eventsToday.getTextSize() + eventsTodayLvAdapter.listViewHeight);
-            homeBox1.setLayoutParams(params);
-            TextView sportEventsToday = (TextView) findViewById(R.id.sporteventsToday);
-            ViewGroup.LayoutParams params2 = homeBox2.getLayoutParams();
-            params2.height = (int) (sportEventsToday.getTextSize() + sporteventstodayadapter.listViewHeight);
-            homeBox2.setLayoutParams(params2); */
-
             eventstodaylv.setClickable(false);
             sporteventstodaylv.setClickable(false);
             mProgress.setVisibility(ProgressBar.INVISIBLE);
             justifyListViewHeightBasedOnChildren(eventstodaylv);
             justifyListViewHeightBasedOnChildren(sporteventstodaylv);
-
-
         }
-
-
     }
 
     public void justifyListViewHeightBasedOnChildren(ListView listView) {
-
         ListAdapter adapter = listView.getAdapter();
-
-        if (adapter == null) {
+        if (adapter == null)
             return;
-        }
-        ViewGroup vg = listView;
         int totalHeight = 0;
         for (int i = 0; i < adapter.getCount(); i++) {
-            View listItem = adapter.getView(i, null, vg);
+            View listItem = adapter.getView(i, null, listView);
             listItem.measure(0, 0);
             totalHeight += listItem.getMeasuredHeight() + 50;
         }
@@ -228,9 +182,8 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
     }
 
     private class EventsAdapter extends ArrayAdapter<String> {
-        String[] events;
-        Context context;
-        int listViewHeight = 1;
+        private String[] events;
+        private Context context;
 
         EventsAdapter(Context context, String[] Events) {
             super(context, R.layout.events_today_list_view_item, Events);
@@ -253,7 +206,6 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
             }
 
             item.courseName.setText(events[position]);
-            //listViewHeight += textView.getMeasuredHeight() + textView.getHeight() + textView.getMinimumHeight();                                      // textView.getTextSize() * textView.getLineCount() + 172; //android:layout_margin=88
             return convertView;
         }
     }
@@ -261,13 +213,10 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         tryToConnect();
-
     }
-
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
         mProgress.setVisibility(ProgressBar.INVISIBLE);
-
     }
 }

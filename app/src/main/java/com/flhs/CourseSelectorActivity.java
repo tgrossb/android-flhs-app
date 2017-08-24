@@ -18,17 +18,13 @@ import android.widget.ToggleButton;
 
 import com.flhs.utils.AlternatingCoursesDialog;
 import com.flhs.utils.ListViewHolderItem;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
-
 
 public class CourseSelectorActivity extends Activity implements AlternatingCoursesDialog.getEditText, AlternatingCoursesDialog.getToggleButton {
     final String[] Days = {"A", "B", "C", "D", "E", "1", "2", "3", "4", "5", "Adv E", "Adv 5", "Collab 5", "Collab E"};
-    EditText[] CourseEditTexts = new EditText[8];
-    ToggleButton[] CourseAltToggles = new ToggleButton[8];
-    SharedPreferences CoursePreferences;
-    ToggleButton selectedToggleButton;
+    private EditText[] CourseEditTexts = new EditText[8];
+    private ToggleButton[] CourseAltToggles = new ToggleButton[8];
+    private SharedPreferences CoursePreferences;
+    private ToggleButton selectedToggleButton;
     private EditText selectedEditText;
 
     @Override
@@ -134,26 +130,10 @@ public class CourseSelectorActivity extends Activity implements AlternatingCours
                 CourseEditTexts[courseIndex].setVisibility(View.GONE);
             }
         }
-
-        ParseConfig.getInBackground(new ConfigCallback() {
-            @Override
-            public void done(ParseConfig config, ParseException e) {
-                if (e == null) {
-                } else {
-                    config = ParseConfig.getCurrentConfig();
-                }
-
-                // Get the message from config or fallback to default value
-
-            }
-        });
-
     }
 
     public void seeSchedule() {
-        new SeeScheduleTask().execute();
-
-
+        new SeeScheduleTask(this).execute();
     }
 
     @Override
@@ -166,9 +146,21 @@ public class CourseSelectorActivity extends Activity implements AlternatingCours
         return selectedEditText;
     }
 
+    public boolean toggled(int i){
+        return CourseAltToggles[i].isChecked();
+    }
+
+    public String getEditText(int i){
+        return CourseEditTexts[i].getText().toString();
+    }
 
     private class SeeScheduleTask extends AsyncTask<Void, Void, Void> {
-        ProgressBar mProgressBar;
+        private ProgressBar mProgressBar;
+        private CourseSelectorActivity selector;
+
+        public SeeScheduleTask(CourseSelectorActivity selector){
+            this.selector = selector;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -180,8 +172,8 @@ public class CourseSelectorActivity extends Activity implements AlternatingCours
         protected Void doInBackground(Void... params) {
             SharedPreferences.Editor mEditor = CoursePreferences.edit();
             for (int courseIndex = 0; courseIndex < CourseAltToggles.length; courseIndex++) {
-                if (!CourseAltToggles[courseIndex].isChecked()) {
-                    String courseName = CourseEditTexts[courseIndex].getText().toString();
+                if (!selector.toggled(courseIndex)) {
+                    String courseName = selector.getEditText(courseIndex);
                     mEditor.putBoolean("Course" + (courseIndex + 1) + "Alt", false);
                     for (int day = 0; day < Days.length; day++) {
                         mEditor.putString("Course " + (courseIndex + 1) + "Day" + Days[day], courseName);
@@ -204,7 +196,6 @@ public class CourseSelectorActivity extends Activity implements AlternatingCours
 
     public void SeeSchedule(View v) {
         seeSchedule();
-
     }
 
     @Override

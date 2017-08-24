@@ -12,9 +12,6 @@ import com.flhs.utils.FLHSDatePicker;
 import com.flhs.utils.LunchPickerFragment;
 import com.flhs.utils.ParserA;
 import com.flhs.utils.ListViewHolderItem;
-import com.parse.ConfigCallback;
-import com.parse.ParseConfig;
-import com.parse.ParseException;
 
 import android.app.DatePickerDialog;
 import android.app.DialogFragment;
@@ -296,17 +293,17 @@ public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.
             }
         }
 
-        ParseConfig.getInBackground(new ConfigCallback() {
-            @Override
-            public void done(ParseConfig config, ParseException e) {
-                if (e != null){
-                    config = ParseConfig.getCurrentConfig();
-                }
+//        ParseConfig.getInBackground(new ConfigCallback() {
+//            @Override
+//            public void done(ParseConfig config, ParseException e) {
+//                if (e != null){
+//                    config = ParseConfig.getCurrentConfig();
+//                }
 
-                // Get the message from config or fallback to default value
+//                // Get the message from config or fallback to default value
 
-            }
-        });
+//            }
+//        });
 
     }
 
