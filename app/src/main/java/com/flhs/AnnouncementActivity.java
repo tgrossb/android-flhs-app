@@ -1,6 +1,7 @@
 //Written by Drew Gregory;
 package com.flhs;
 
+import com.flhs.activity.FLHSActivity;
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.ParserA;
 
@@ -31,7 +32,7 @@ public class AnnouncementActivity extends FLHSActivity implements ConnectionErro
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getActionBar().setIcon(R.drawable.announcements_icon_red);
+        getSupportActionBar().setIcon(R.drawable.announcements_icon_red);
         return super.onCreateOptionsMenu(menu);
 
     }

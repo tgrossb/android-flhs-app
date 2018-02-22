@@ -1,12 +1,12 @@
 package com.flhs;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.flhs.activity.FLHSActivity;
 
 
 public class TempSportsActivity extends FLHSActivity {

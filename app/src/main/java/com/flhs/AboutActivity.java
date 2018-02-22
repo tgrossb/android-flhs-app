@@ -5,6 +5,8 @@ package com.flhs;
 import android.os.Bundle;
 import android.widget.Button;
 
+import com.flhs.activity.FLHSActivity;
+
 public class AboutActivity extends FLHSActivity {
     Button b1;
 

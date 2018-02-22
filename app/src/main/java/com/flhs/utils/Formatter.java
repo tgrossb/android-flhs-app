@@ -3,22 +3,31 @@ package com.flhs.utils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class Formatter {
     //Hey android team! I got made this formatter for the sports news thing you guys are working on! Using the url generated from the the Format part of the "Awesome
     //Sports News Website!!!" thing and I made a class with the method that you can use yourselves to set up a url to generate a table that you want for the sports schedules! Cool, eh? :)
-    int day;
-    int month;
-    int year;
+    private String calDay;
+    private String calMonth;
+    private String calYear;
+
+    // Cant fix these yet
+    public int day;
+    public int month;
+    public int year;
 
     public Formatter() {
-        GregorianCalendar dateToday = new GregorianCalendar();
-        Date dateConversion = new Date();
+        Date today = new Date();
 
         //Getting Current day, month, year
-        day = Integer.parseInt(new SimpleDateFormat("d").format(dateConversion)); //SimpleDateFormat formats Date instance into time, date, day of week, etc....
-        month = Integer.parseInt(new SimpleDateFormat("M").format(dateConversion));
-        year = Integer.parseInt(new SimpleDateFormat("y").format(dateConversion));
+        day = Integer.parseInt(new SimpleDateFormat("d", Locale.US).format(today));
+        month = Integer.parseInt(new SimpleDateFormat("M", Locale.US).format(today));
+        year = Integer.parseInt(new SimpleDateFormat("y", Locale.US).format(today));
+
+        calDay = new SimpleDateFormat("dd", Locale.US).format(today);
+        calMonth = new SimpleDateFormat("MM", Locale.US).format(today);
+        calYear = new SimpleDateFormat("yyyy", Locale.US).format(today);
     }
 
     public int getDay() {
@@ -32,7 +41,7 @@ public class Formatter {
     public int getYear() {
         return year;
     }
-
+/*
     public String SportsNewsURLFormat(int EndDay, int EndMonth, int EndYear) {
         //0 for any of the arguments is supposed to mean that I want it to be the instance that today would be.....
         if (EndDay == 0) {
@@ -58,18 +67,25 @@ public class Formatter {
         return calendarURL;
 
     }
-
+*/
     public static String googleDriveViewerURLFormat(String endstring) { //Using Google Drive Viewer to read files like PDFS.... :) :D 8)
         return "http://docs.google.com/gview?embedded=true&url=" + endstring;
     }
 
     public String getFLHSCalendarURL() {
-        return "http://bcsdny.org/calendar_events.cfm?&cat=0&location=1&themonth=" + month + "&theyear=" + year + "&buildit=0.851627111512&AddSportingEvents=0&printPage=1";
-
+        return getFLHSCalendarURL(calDay, calMonth, calYear);
     }
 
-    public String getFLHSCalendarURL(int month, int year) {
-        return "http://bcsdny.org/calendar_events.cfm?&cat=0&location=1&themonth=" + month + "&theyear=" + year + "&buildit=0.851627111512&AddSportingEvents=0&printPage=1";
+    public String getFLHSCalendarURL(int month, int year){
+        return getFLHSCalendarURL("1", "" + month, "" + year);
+    }
 
+    public String getFLHSCalendarURL(String day, String month, String year){
+/*
+        return "https://www.bcsdny.org//site/Default.aspx?PageID=10&EventDateID=2891&CurrentView=month&" +
+                "CurrentDate=19&CurrentMonth=1&CurrentYear=2018" +
+                "#calendar2047/" + year + "" + month + "" + day + "/month";
+*/
+        return "https://www.bcsdny.org//site/Default.aspx?PageID=10&EventDateID=2891&CurrentView=month&CurrentDate=19&CurrentMonth=1&CurrentYear=2018#calendar2047/20180220/month";
     }
 }
