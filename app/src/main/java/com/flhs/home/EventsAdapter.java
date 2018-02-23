@@ -1,5 +1,6 @@
 package com.flhs.home;
 
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
 import android.view.LayoutInflater;
@@ -9,28 +10,34 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.flhs.R;
+import com.flhs.utils.EventObject;
 
 import java.util.ArrayList;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder> {
-    private ArrayList<String> events;
+    private ArrayList<EventObject> events;
+    private int backgroundColor;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        private LinearLayout event;
+        private CardView eventView;
 
-        ViewHolder(LinearLayout event){
-            super(event);
-            this.event = event;
+        ViewHolder(CardView eventView, int backgroundColor){
+            super(eventView);
+            this.eventView = eventView;
+            this.eventView.setCardBackgroundColor(backgroundColor);
         }
 
-        public void setText(String text){
-            TextView innerText = event.findViewById(R.id.eventsListTextView);
-            innerText.setText(text);
+        public void setText(EventObject event){
+            TextView descritionView = eventView.findViewById(R.id.description);
+            TextView timeView = eventView.findViewById(R.id.time);
+            descritionView.setText(event.getDescription());
+            timeView.setText(event.getTime());
         }
     }
 
-    EventsAdapter(ArrayList<String> events) {
+    EventsAdapter(ArrayList<EventObject> events, int backgroundColor) {
         this.events = events;
+        this.backgroundColor = backgroundColor;
     }
 
 
@@ -38,8 +45,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
     @Override
     public EventsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        LinearLayout event = (LinearLayout) inflater.inflate(R.layout.events_today_list_view_item, parent, false);
-        return new ViewHolder(event);
+        CardView event = (CardView) inflater.inflate(R.layout.events_list_item, parent, false);
+        return new ViewHolder(event, backgroundColor);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -53,24 +60,4 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
     public int getItemCount() {
         return events.size();
     }
-
-    /*
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ListViewHolderItem item;
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.events_today_list_view_item, parent, false);
-                item = new ListViewHolderItem();
-                //Too lazy to make different ListViewHolderItem.... courseName will be the TextView we will use :-)
-                item.courseName = convertView.findViewById(R.id.eventsListTextView);
-                convertView.setTag(item);
-            } else {
-                item = (ListViewHolderItem) convertView.getTag();
-            }
-
-            item.courseName.setText(events.get(position));
-            return convertView;
-        }
- */
 }

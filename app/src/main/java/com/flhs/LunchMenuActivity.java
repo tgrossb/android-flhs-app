@@ -1,6 +1,5 @@
 package com.flhs;
 
-import com.flhs.activity.FLHSActivity;
 import com.flhs.utils.Database;
 import com.flhs.utils.Formatter;
 
@@ -13,16 +12,14 @@ import android.webkit.WebViewClient;
 public class LunchMenuActivity extends FLHSActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getActionBar().setIcon(R.drawable.lunch_menu_red);
+        getSupportActionBar().setIcon(R.drawable.lunch_menu_red);
         return super.onCreateOptionsMenu(menu);
 
     }
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lunch_menu);
-        SetupNavDrawer();
+        super.onCreate(savedInstanceState, R.layout.activity_lunch_menu);
+
         WebView LunchMenuPDFReader = (WebView) findViewById(R.id.Lunch_Menu_Web_View);
 
         //I skipped this part.... too lazy to check for Google Drive Viewer Consistencies..... I just put the Google Drive Viewer URL directly in

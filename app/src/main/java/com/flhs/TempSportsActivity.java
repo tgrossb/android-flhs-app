@@ -6,22 +6,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.flhs.activity.FLHSActivity;
-
 
 public class TempSportsActivity extends FLHSActivity {
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getActionBar().setIcon(R.drawable.sports_icon_red);
-        return super.onCreateOptionsMenu(menu);
-
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.temp_sports);
-        SetupNavDrawer();
+        super.onCreate(savedInstanceState, R.layout.temp_sports);
         WebView mWebView = (WebView) findViewById(R.id.webView);
         mWebView.setWebViewClient(new WebViewClient());
         WebSettings settings = mWebView.getSettings();

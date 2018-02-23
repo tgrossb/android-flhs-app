@@ -10,8 +10,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.flhs.activity.FLHSActivity;
-
 public class SportsNavigationActivity extends FLHSActivity {
 
     String[] Levels = {"Varsity", "Junior Varsity", "Frosh"};
@@ -44,11 +42,9 @@ public class SportsNavigationActivity extends FLHSActivity {
     SharedPreferences.Editor SportsPrefsEditor;
     TextView Title;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sports_navigation);
-        SetupNavDrawer();
+        super.onCreate(savedInstanceState, R.layout.activity_sports_navigation);
+
         SportsPrefs = getPreferences(MODE_PRIVATE);
         SportsPrefsEditor = SportsPrefs.edit();
         SportsPrefsEditor.putString("Level", "Unselected");

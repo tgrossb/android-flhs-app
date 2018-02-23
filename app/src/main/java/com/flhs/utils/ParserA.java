@@ -138,8 +138,8 @@ public class ParserA {
         return null;
     }
 
-    public static ArrayList<SportsEvent> printSportsToday() {
-        ArrayList<SportsEvent> sportsEvents;
+    public static ArrayList<EventObject> printSportsToday() {
+        ArrayList<EventObject> sportsEvents;
         String url = "http://sportspak.swboces.org/sportspak/oecgi3.exe/O4W_SPAKONLINE_HOME"; //Day, Month, Year, 0 if I want today's..... Change 13 to 0 after testing....
         try {
             Document SportsFormatToPrintWebpage = Jsoup.connect(url).get();

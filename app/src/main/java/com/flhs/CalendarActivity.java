@@ -1,7 +1,6 @@
 //Written by Drew Gregory
 package com.flhs;
 
-import com.flhs.activity.FLHSActivity;
 import com.flhs.utils.Formatter;
 import com.flhs.utils.ParserA;
 
@@ -25,19 +24,9 @@ public class CalendarActivity extends FLHSActivity {
     WebView calendarPrintWebpageViewer;
     int selectedYear;
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getActionBar().setIcon(R.drawable.calendar_icon_red);
-        return super.onCreateOptionsMenu(menu);
-
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_calendar);
-        SetupNavDrawer();
+        super.onCreate(savedInstanceState, R.layout.activity_calendar);
+
         formattingthingy = new Formatter();
         calendarPrintWebpageViewer = (WebView) findViewById(R.id.Calendar_Web_View);
         calendarPrintWebpageViewer.setWebViewClient(new WebViewClient());

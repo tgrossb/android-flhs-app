@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import com.flhs.activity.FLHSActivity;
 import com.flhs.home.HomeActivity;
 import com.flhs.utils.Database;
 import com.flhs.utils.DayPickerFragment;
@@ -71,11 +70,9 @@ public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.
     String scheduleType;
     Button dateButton;
 
-    @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_schedule);
-        SetupNavDrawer();
+        super.onCreate(savedInstanceState, R.layout.activity_schedule);
+
         content = (ListView) findViewById(R.id.contentListView);
         String[] loadScheduleStrings = {"You don't have school today!"};
         ArrayAdapter<String> EmptySchedule = new ArrayAdapter<>(ScheduleActivity.this, android.R.layout.simple_list_item_1, loadScheduleStrings);
@@ -309,13 +306,13 @@ public class ScheduleActivity extends FLHSActivity implements DayPickerFragment.
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.schedule_content_menu, menu);
-        getActionBar().setIcon(R.drawable.schedule_red);
-        getActionBar().show();
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.schedule_content_menu, menu);
+//        getSupportActionBar().setIcon(R.drawable.schedule_red);
+//        getSupportActionBar().show();
+//        return true;
+//    }
 
     public void changeDate(View v) {
         SharedPreferences.Editor edit = prefs.edit();

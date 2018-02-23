@@ -201,7 +201,7 @@ public class CourseSelectorActivity extends Activity implements AlternatingCours
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.taskbar, menu);
+        getMenuInflater().inflate(R.menu.toolbar, menu);
         return true;
     }
 

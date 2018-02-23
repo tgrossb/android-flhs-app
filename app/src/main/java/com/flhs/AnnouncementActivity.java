@@ -1,7 +1,6 @@
 //Written by Drew Gregory;
 package com.flhs;
 
-import com.flhs.activity.FLHSActivity;
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.ParserA;
 
@@ -11,6 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,18 +30,8 @@ public class AnnouncementActivity extends FLHSActivity implements ConnectionErro
     ProgressDialog prdi;
     ProgressBar mProgress;
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportActionBar().setIcon(R.drawable.announcements_icon_red);
-        return super.onCreateOptionsMenu(menu);
-
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_announcement);
-        SetupNavDrawer();
+        super.onCreate(savedInstanceState, R.layout.activity_announcement);
 
         mProgress = (ProgressBar) findViewById(R.id.progressBar1);
 

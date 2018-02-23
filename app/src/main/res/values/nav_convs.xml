@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="content_ids">
+        <item>@layout/activity_announcement</item>
+        <item>@layout/activity_calendar</item>
+        <item>@layout/activity_lunch_menu</item>
+        <item>@layout/activity_sports_navigation</item>
+        <item>@layout/activity_schedule</item>
+    </array>
+
+    <array name="nav_ids">
+        <item>@id/nav_announcements</item>
+        <item>@id/nav_calendar</item>
+        <item>@id/nav_lunch_menu</item>
+        <item>@id/nav_sports</item>
+        <item>@id/nav_bell_schedule</item>
+    </array>
+
+    <array name="nav_titles">
+        <item>@string/title_activity_announcements</item>
+        <item>@string/title_activity_calendar</item>
+        <item>@string/title_activity_lunch_menu</item>
+        <item>@string/title_activity_sports_navigation</item>
+        <item>@string/title_activity_schedule</item>
+    </array>
+
+    <array name="black_icons">
+        <item>@drawable/announcements_icon_black</item>
+        <item>@drawable/calendar_icon_black</item>
+        <item>@drawable/lunch_menu_black</item>
+        <item>@drawable/sports_icon_black</item>
+        <item>@drawable/schedule_black</item>
+    </array>
+
+    <array name="red_icons">
+        <item>@drawable/announcements_icon_red</item>
+        <item>@drawable/calendar_icon_red</item>
+        <item>@drawable/lunch_menu_red</item>
+        <item>@drawable/sports_icon_red</item>
+        <item>@drawable/schedule_red</item>
+    </array>
+</resources>
