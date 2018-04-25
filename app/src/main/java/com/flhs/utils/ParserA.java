@@ -10,6 +10,8 @@ import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -19,10 +21,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,92 +39,166 @@ import org.jsoup.select.Elements;
 public class ParserA {
     final static int MIDDLE_LUNCH = 1;
     final static int LATE_LUNCH = 2;
+    public static final String BEGIN = "BEGIN:VEVENT", END = "END:VEVENT", DTSTART = "DTSTART:",
+                            DTEND = "DTEND:", DURATION = "DURATION:", SUMMARY = "SUMMARY:";
+    public static final SimpleDateFormat veventForm = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US);
+    public static final SimpleDateFormat veventFormNoTime = new SimpleDateFormat("yyyyMMdd", Locale.US);
+    public static final String DISTRICT_CALENDAR = "https://www.bcsdny.org/site/handlers/icalfeed.ashx?MIID=2047";
+    public static final String FLHS_CALENDAR = "https://www.bcsdny.org/site/handlers/icalfeed.ashx?MIID=2048";
 
-    public static String integerMonthToString(int month) {
-        String[] months = {"January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"};
-        try {
-            return months[month - 1];
-        } catch (IndexOutOfBoundsException e){
-            return "Invalid month";
-        }
+    public static ArrayList<EventObject> parseEventsToday(){
+        // Use the district calendar by default
+        String icalAdress = ParserA.DISTRICT_CALENDAR;
+        String ical = readCalendar(icalAdress);
+        Date today = new Date();
+        // Uncomment to force a day with 3 events for checking
+//        Calendar c = Calendar.getInstance();
+//        c.set(2018, 3, 3);
+//        today = c.getTime();
+        return parseEventsToday(today, ical);
     }
 
-    public static ArrayList<EventObject> parseEventsToday() {
-        ArrayList<EventObject> events = new ArrayList<>();
-        String ical = readCalendar("https://www.bcsdny.org/site/handlers/icalfeed.ashx?MIID=2047");
+    public static ArrayList<EventObject> parseEventsToday(Date today, String ical) {
+        if (ical == null)
+            return null;
 
         // Split the ical into vevents
-        String[] vevents = ical.split("END:VEVENT\nBEGIN:VEVENT");
-        int firstStart = vevents[0].indexOf("BEGIN:VEVENT");
+        String[] vevents = ical.split(END + "\n" + BEGIN);
+        int firstStart = vevents[0].indexOf(BEGIN);
         vevents[0] = vevents[0].substring(firstStart + 12);
-        int lastEnd = vevents[vevents.length-1].indexOf("END:VEVENT");
+        int lastEnd = vevents[vevents.length-1].indexOf(END);
         vevents[vevents.length-1] = vevents[vevents.length-1].substring(0, lastEnd);
 
-        System.out.println(getValue(vevents[0], "DTSTART:"));
+        HashMap<String, ArrayList<EventObject>> eventfulDays = getEventfulDays(vevents);
+        String todayFormed = veventFormNoTime.format(today);
+        if (eventfulDays.containsKey(todayFormed))
+            return eventfulDays.get(todayFormed);
+        return new ArrayList<>();
+    }
 
-        // Look for today's date as a DTSTART
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.US);
-//        Date today = new Date();
-        Calendar c = Calendar.getInstance();
-        c.set(2018, 1, 19);
-        Date today = c.getTime();
-        String todayFormed = format.format(today);
-        for (String vevent : vevents) {
-            boolean match = false;
-            if (vevent.contains("DTSTART:" + todayFormed)) {
-                match = true;
-            } else if (vevent.contains("DURATION:")) {
-                String durationPeriod = getValue(vevent, "DURATION:");
-                int duration = Integer.parseInt(durationPeriod.substring(1, durationPeriod.length() - 1));
-                String period = durationPeriod.substring(durationPeriod.length() - 1);
+    // String dates are dates formatted with veventFormNoTime
+    public static HashMap<String, ArrayList<EventObject>> getEventfulDays(String[] vevents){
+        HashMap<String, ArrayList<EventObject>> eventfulDays = new HashMap<>();
+        for (String vevent : vevents){
+            String dtstart = getValue(vevent, DTSTART);
 
-                String startDate = getValue(vevent, "DTSTART:").substring(0, 8);
-                Date start = new Date();
-                try {
-                    start = format.parse(startDate);
-                } catch (ParseException e){
-                    e.printStackTrace();
-                }
-                Calendar endCal = Calendar.getInstance();
-                endCal.setTime(start);
-                if (period.equals("D"))
-                    endCal.add(Calendar.DATE, duration);
-                else if (period.equals("M"))
-                    endCal.add(Calendar.MONTH, duration);
-                else if (period.equals("Y"))
-                    endCal.add(Calendar.YEAR, duration);
-                Date end = endCal.getTime();
-                boolean nmatch = false;
-                if (start.compareTo(today) * today.compareTo(end) >= 0)
-                    nmatch = true;
-                System.out.println("Is " + today.toString() + " between " + start.toString() + " and " + end.toString() + ": " + nmatch);
-                if (nmatch)
-                    match = true;
-            }
-            if (match){
-                String dateTime = getValue(vevent, "DTSTART:");
-                int timeStart = dateTime.indexOf("T");
-                int timeStop = dateTime.indexOf("Z");
-                String time = "00:00:00";
-                if (timeStart != -1 && timeStop != -1) {
-                    time = dateTime.substring(timeStart + 1, timeStop);
-                    time = Integer.parseInt(time.substring(0, 2)) - 5 + ":" + time.substring(2, 4) + ":" + time.substring(4, 6);
-                }
+            Date startDate = fromVeventDate(dtstart);
+            Date endDate = getEventEndDate(vevent, startDate);
 
-                String description = getValue(vevent, "SUMMARY:");
+            Calendar startCal = Calendar.getInstance();
+            startCal.setTime(startDate);
+            Calendar endCal = Calendar.getInstance();
+            endCal.setTime(endDate);
+            String description = getValue(vevent, SUMMARY);
+            String time = getTime(vevent);
+            while (startCal.before(endCal)){
+                Date betweenUnformed = startCal.getTime();
+                String between = veventFormNoTime.format(betweenUnformed);
                 EventObject event = new EventObject(time, description);
-                events.add(event);
+                if (eventfulDays.containsKey(between))
+                    eventfulDays.get(between).add(event);
+                else {
+                    ArrayList<EventObject> events = new ArrayList<>(1);
+                    events.add(event);
+                    eventfulDays.put(between, events);
+                }
+                startCal.add(Calendar.DAY_OF_MONTH, 1);
             }
         }
+        return eventfulDays;
+    }
 
-        return events;
+    public static String getTime(String vevent){
+        String dateTimeStart = getValue(vevent, DTSTART);
+        if (dateTimeStart == null)
+            return "Never starts";
+
+        // Time end is not present if the event is all day or multiple days
+        String time;
+        String dateTimeEnd = getValue(vevent, DTEND);
+
+        Date startDateTime = fromVeventDate(dateTimeStart);
+        Date endDateTime = fromVeventDate(dateTimeEnd);
+
+        if (dateTimeEnd != null){
+            String start = UTCToNY(startDateTime);
+            String end = UTCToNY(endDateTime);
+            if (end.equals("11:59 PM"))
+                time = "Starts at " + start;
+            else
+                time = start + " - " + end;
+        } else {
+            time = "All Day";
+        }
+        return time;
+    }
+
+    //TODO: Change everything to Instant everywhere... for real...  i know its a lot, but do it
+    public static String UTCToNY(Date utcInNy){
+        SimpleDateFormat dateToInstant = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.00'Z'", Locale.US);
+        DateTimeFormatter toNY = DateTimeFormatter.ofPattern("h:mm a");
+        String ny = Instant.parse(dateToInstant.format(utcInNy)).atZone(ZoneId.of("America/New_York")).format(toNY);
+
+        if (ny.equals("12:00 AM"))
+            ny = "Midnight";
+        else if (ny.equals("12:00 PM"))
+            ny = "Noon";
+        return ny;
+    }
+
+    public static Date getEventEndDate(String vevent, Date start){
+        String dtend = getValue(vevent, DTEND);
+        if (dtend != null)
+            return fromVeventDate(dtend);
+        String durationPeriod = getValue(vevent, DURATION);
+
+        if (durationPeriod == null)
+            return start;
+        int duration = Integer.parseInt(durationPeriod.substring(1, durationPeriod.length() - 1));
+        String period = durationPeriod.substring(durationPeriod.length() - 1);
+
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(start);
+        if (period.equals("D"))
+            endCal.add(Calendar.DATE, duration);
+        else if (period.equals("M"))
+            endCal.add(Calendar.MONTH, duration);
+        else if (period.equals("Y"))
+            endCal.add(Calendar.YEAR, duration);
+        Date end = endCal.getTime();
+        return end;
     }
 
     public static String getValue(String big, String key){
-        int keyEnd = big.indexOf(key) + key.length();
+        int keyStart = big.indexOf(key);
+        if (keyStart < 0)
+            return null;
+        int keyEnd = keyStart + key.length();
         int nextNewline = big.indexOf("\n", keyEnd);
+        if (nextNewline < 0)
+            nextNewline = big.length();
         return big.substring(keyEnd, nextNewline);
+    }
+
+    public static Date fromVeventDate(String dateString){
+        Date date = null;
+        try {
+            date = veventForm.parse(dateString);
+        } catch (ParseException e) {
+            if (!dateString.matches("[0-9]+")){
+                Log.i("Parse warning", "Error parsing " + dateString + " with time");
+                e.printStackTrace();
+            }
+        } catch (NullPointerException e){}
+        if (date == null) {
+            try {
+                date = veventFormNoTime.parse(dateString);
+            } catch (ParseException e) {
+                Log.e("Parse error", "Error parsing " + dateString + " without time");
+                e.printStackTrace();
+            } catch (NullPointerException e){}
+        }
+        return date;
     }
 
     public static String readCalendar(String adress) {

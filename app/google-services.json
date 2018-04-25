@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "377257851199",
-    "project_id": "flhs-info"
+    "firebase_url": "https://flhs-info.firebaseio.com",
+    "project_id": "flhs-info",
+    "storage_bucket": "flhs-info.appspot.com"
   },
   "client": [
     {
@@ -13,16 +15,20 @@
       },
       "oauth_client": [
         {
-          "client_id": "377257851199-mrs5kk175iv9t328ub89qrseu01e1hnf.apps.googleusercontent.com",
-          "client_type": 3
-        },
-        {
-          "client_id": "377257851199-a95b5j35ock4gan3lok9f2rp3jg3dc1l.apps.googleusercontent.com",
+          "client_id": "377257851199-gbvaudrjccvjma4i73bvq4e3ntjo7ngg.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.flhs",
-            "certificate_hash": "18a998c18497c3bfc4cf9f486c6bb44b7d1f5c58"
+            "certificate_hash": "3f2fdda5cef1790b84e2d0aa0b394632c5ed13d5"
           }
+        },
+        {
+          "client_id": "377257851199-8e4rifek8lljptpfk8j5csfr2bmcsp03.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "377257851199-mrs5kk175iv9t328ub89qrseu01e1hnf.apps.googleusercontent.com",
+          "client_type": 3
         }
       ],
       "api_key": [
@@ -35,11 +41,23 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "377257851199-8e4rifek8lljptpfk8j5csfr2bmcsp03.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "377257851199-te2qn78nsmj4v5dfcuko9p4fjnoiddul.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.bcsdny.FLHS-App"
+              }
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }

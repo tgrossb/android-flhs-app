@@ -10,13 +10,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class LunchMenuActivity extends FLHSActivity {
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportActionBar().setIcon(R.drawable.lunch_menu_red);
-        return super.onCreateOptionsMenu(menu);
-
-    }
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState, R.layout.activity_lunch_menu);
 

@@ -1,82 +1,101 @@
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/linearLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="horizontal" >
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
 
         <include layout="@layout/toolbar" />
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/swiperefresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/relativeLayout2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/gray"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:padding="@dimen/activity_vertical_margin">
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content">
 
                 <Button
-                    android:id="@+id/switch_lunch"
+                    android:id="@+id/refresh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_alignParentTop="true"
-                    android:drawableRight="@drawable/refresh" />
+                    android:drawableRight="@drawable/refresh"
+                    android:drawableEnd="@drawable/refresh"
+                    android:visibility="invisible"/>
 
                 <TextView
                     android:id="@+id/date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"
                     android:singleLine="true"
                     android:text="Loading"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/black"
                     android:textSize="@dimen/headerpt"
-                    android:layout_toStartOf="@+id/switch_lunch"
-                    android:layout_toLeftOf="@+id/switch_lunch"/>
+                    android:layout_toStartOf="@+id/refresh"
+                    android:layout_toLeftOf="@+id/refresh"/>
+
+                <TextView
+                    android:id="@+id/dayType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:singleLine="true"
+                    android:visibility="invisible"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/headerpt" />
 
                 <ProgressBar
                     android:id="@+id/progressBar1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true" />
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true" />
             </RelativeLayout>
 
             <View
                 android:layout_width="fill_parent"
-                android:layout_height="@dimen/vertspacing"
-                android:background="@color/red" />
+                android:layout_height="@dimen/vertspacing" />
 
-            <ScrollView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/announcement"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/date"
-                    android:layout_gravity="fill"
-                    android:text="Loading Announcements..."
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@color/black"
-                    android:textSize="8pt"
-                    android:paddingRight="10dp"
-                    android:paddingLeft="10dp" />
-            </ScrollView>
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/announcements_holder"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scrollbars="vertical" />
+            </LinearLayout>
         </LinearLayout>
+        </android.support.v4.widget.SwipeRefreshLayout>
     </LinearLayout>
 
     <include layout="@layout/navigation_drawer"/>

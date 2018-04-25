@@ -8,5 +8,7 @@
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
     android:theme="@style/AppCompatTheme.NavigationDrawer"
+    app:itemBackground="@color/menu_background_color"
+    app:itemTextColor="@color/menu_text_color"
     app:menu="@menu/drawer_view"
     app:elevation="16dp" />

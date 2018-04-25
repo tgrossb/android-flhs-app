@@ -1,16 +1,13 @@
-package com.flhs.home;
+package com.flhs.utils;
 
+import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.flhs.R;
-import com.flhs.utils.EventObject;
 
 import java.util.ArrayList;
 
@@ -35,11 +32,14 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
         }
     }
 
-    EventsAdapter(ArrayList<EventObject> events, int backgroundColor) {
+    public EventsAdapter(ArrayList<EventObject> events, int backgroundColor) {
         this.events = events;
         this.backgroundColor = backgroundColor;
     }
 
+    public static int color(Context c, int id){
+        return c.getResources().getColor(id);
+    }
 
     // Create new views (invoked by the layout manager)
     @Override
@@ -59,5 +59,11 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
     @Override
     public int getItemCount() {
         return events.size();
+    }
+
+    public void removeAllItems(){
+        final int size = events.size();
+        events.clear();
+        notifyItemRangeChanged(0, size);
     }
 }

@@ -41,19 +41,32 @@
         </activity>
         <activity
             android:name="com.flhs.AboutActivity"
-            android:label="@string/title_activity_about" >
+            android:label="@string/title_activity_about"
+            android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
         <activity
-            android:name="com.flhs.AnnouncementActivity"
-            android:label="@string/title_activity_announcement" >
+            android:name="com.flhs.calendar.EventfulDayDisplay"
+            android:label="Events Today"
+            android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
         <activity
-            android:name="com.flhs.CalendarActivity"
-            android:label="@string/title_activity_calendar" >
+            android:name="com.flhs.announcements.AnnouncementActivity"
+            android:label="@string/title_activity_announcement"
+            android:parentActivityName="com.flhs.home.HomeActivity">
+        </activity>
+        <activity
+            android:name="com.flhs.calendar.CalendarActivity"
+            android:label="@string/title_activity_calendar"
+            android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
         <activity
             android:name="com.flhs.ScheduleActivity"
-            android:label="@string/title_activity_schedule" >
+            android:label="@string/title_activity_schedule"
+            android:parentActivityName="com.flhs.home.HomeActivity">
+        </activity>
+        <activity
+            android:name="com.flhs.SignInActivity"
+            android:label="@string/title_activity_sign_in">
         </activity>
         <activity
             android:name="com.flhs.CourseSelectorActivity"
@@ -66,11 +79,13 @@
         </activity>
         <activity
             android:name="com.flhs.LunchMenuActivity"
-            android:label="@string/title_activity_lunch_menu" >
+            android:label="@string/title_activity_lunch_menu"
+            android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
         <activity
             android:name="com.flhs.SportsNavigationActivity"
-            android:label="@string/title_activity_sports_navigation" >
+            android:label="@string/title_activity_sports_navigation"
+            android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
 
         <service android:name="com.parse.PushService" />
@@ -103,7 +118,8 @@
 
         <activity
             android:name="com.flhs.TempSportsActivity"
-            android:label="@string/title_activity_temp_sports" >
+            android:label="@string/title_activity_temp_sports"
+            android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
     </application>
 

@@ -7,27 +7,27 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.flhs.announcements.AnnouncementActivity;
+import com.flhs.calendar.CalendarActivity;
 import com.flhs.home.HomeActivity;
 
 public class FLHSActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private final Handler drawerActionHandler = new Handler();
+    public static String[] vevents;
 
     public boolean isOnline() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -35,7 +35,7 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         try {
             networkInfo = connMgr.getActiveNetworkInfo();
         } catch (NullPointerException e) {
-            Toast.makeText(this, "Null pointer from isOnline", Toast.LENGTH_LONG).show();
+//            Toast.makeText(this, "Null pointer from isOnline", Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
         return (networkInfo != null && networkInfo.isConnected());
@@ -54,10 +54,13 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = findViewById(R.id.drawer_layout);
         Toolbar bar = findViewById(R.id.toolbar);
         bar.setLogo(null);
+        bar.setContentInsetStartWithNavigation(0);
         setSupportActionBar(bar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setIcon(R.drawable.ic_launcher);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
 
         NavigationView navigationView = findViewById(R.id.nav_drawer);
         navigationView.setItemIconTintList(null);
@@ -71,7 +74,7 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         }
 
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, bar, R.string.drawer_open, R.string.drawer_close);
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
     }
 
@@ -117,7 +120,7 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
             public void run(){
                 navigate(item.getItemId());
             }
-        }, 100); // Delay in ms
+        }, 300); // Delay in ms
         return true;
     }
 

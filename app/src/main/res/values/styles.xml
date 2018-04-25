@@ -1,13 +1,17 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Holo.Light">
         <item name="android:actionBarStyle">@style/mActionBarStyle</item>
+        <item name="android:itemBackground">@color/soft_red</item>
     </style>
 
     <style name="mActionBarStyle" parent="android:Widget.Holo.Light.ActionBar">
         <item name="android:background">#E2291F</item>
+        <!-- To change the background of options menu-->
+        <item name="android:itemBackground">@color/soft_red</item>
     </style>
 
     <style name="AppCompatTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:itemBackground">@color/soft_red</item>
     </style>
 
     <style name="AppCompatTheme.NavDrawerItem">
@@ -15,8 +19,10 @@
         <item name="android:textColor">@color/primary_text_default_material_light</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:itemBackground">@color/soft_red</item>
     </style>
 
     <style name="AppCompatTheme.NavigationDrawer" parent="AppCompatTheme">
+        <item name="android:itemBackground">@color/soft_red</item>
     </style>
 </resources>

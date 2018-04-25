@@ -1,6 +1,5 @@
 package com.flhs.home;
 
-import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,19 +7,22 @@ import java.util.Locale;
 
 import com.flhs.FLHSActivity;
 import com.flhs.R;
+import com.flhs.SignInActivity;
+import com.flhs.utils.AccountInfo;
 import com.flhs.utils.ConnectionErrorFragment;
+import com.flhs.utils.EventsAdapter;
 import com.flhs.utils.ParserA;
-import com.flhs.utils.SportsEvent;
 import com.flhs.utils.EventObject;
+import com.flhs.utils.NPALayoutManager;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.DialogFragment;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 
-import android.view.Menu;
-import android.view.ViewGroup;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TabHost;
@@ -28,27 +30,37 @@ import android.widget.TextView;
 
 
 public class HomeActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener {
+    public static boolean noSignIn = true;
+    public static boolean dontRemember = true;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar mProgress;
     public TextView dateView;
     public RecyclerView eventsTodayList;
     public RecyclerView sportsEventsTodayList;
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportActionBar().setIcon(R.drawable.ic_launcher);
-        return super.onCreateOptionsMenu(menu);
-    }
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState, R.layout.activity_home);
+
+        //Before anything happens, check if the user is signed in
+        if (!noSignIn && (!AccountInfo.isSignedIn(this) || dontRemember)){
+            Intent signIn = new Intent(this, SignInActivity.class);
+            signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(signIn);
+        }
 
         String[] loadStrings = {"Loading events from the internet....."};
         ArrayAdapter<String> loadingAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, loadStrings);
 
         mProgress = findViewById(R.id.progress_bar);
+        swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                tryToConnect();
+            }
+        });
         // Set the list views to loading content message
-
-        TabHost host = (TabHost)findViewById(R.id.tabHost);
+        TabHost host = findViewById(R.id.tabHost);
         host.setup();
 
         //Tab 1
@@ -67,23 +79,17 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         host.setOnTabChangedListener(hostListener);
 
         eventsTodayList = findViewById(R.id.eventsTodayList);
-        eventsTodayList.setLayoutManager(new LinearLayoutManager(this));
+        eventsTodayList.setLayoutManager(new NPALayoutManager(this));
 
         sportsEventsTodayList = findViewById(R.id.sportsEventsTodayList);
-        sportsEventsTodayList.setLayoutManager(new LinearLayoutManager(this));
+        sportsEventsTodayList.setLayoutManager(new NPALayoutManager(this));
 
-
-        // Format date to be "DayOfWeek Month Day, Year"
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US);
-        String date = dateFormat.format(new Date());
-
-        // Set the date text view
         dateView = findViewById(R.id.dateHeader);
-        dateView.setText(date);
         tryToConnect();
     }
 
     public void tryToConnect(){
+        swipeRefreshLayout.setRefreshing(false);
         if (isOnline()) {
             // Start loading the events if connected
             new EventsLoaderThread().execute();
@@ -91,6 +97,7 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
             // Show the connection error dialog if not connected
             ConnectionErrorFragment connectionError = new ConnectionErrorFragment();
             connectionError.show(getFragmentManager(), "Connection Error");
+            mProgress.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -101,6 +108,15 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
 
         @Override
         protected void onPreExecute() {
+            dateView.setText("Loading...");
+//            eventsTodayList.removeAllViews();
+//            sportsEventsTodayList.removeAllViews();
+            EventsAdapter eventsAdapter = (EventsAdapter) eventsTodayList.getAdapter();
+            EventsAdapter sportsAdapter = (EventsAdapter) sportsEventsTodayList.getAdapter();
+            if (eventsAdapter != null)
+                eventsAdapter.removeAllItems();
+            if (sportsAdapter != null)
+                sportsAdapter.removeAllItems();
             mProgress.setVisibility(ProgressBar.VISIBLE);
         }
 
@@ -114,6 +130,11 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
 
         @Override
         protected void onPostExecute(Void result) {
+            // Format date to be "DayOfWeek Month Day, Year"
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US);
+            String date = dateFormat.format(new Date());
+            dateView.setText(date);
+
             if (eventsToday == null) {
                 if (getApplicationContext().equals(HomeActivity.this)){
                     ConnectionErrorFragment errorAlert = new ConnectionErrorFragment();
@@ -149,19 +170,6 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
 //            justifyListViewHeightBasedOnChildren(eventsTodayList);
 //            justifyListViewHeightBasedOnChildren(sportsEventsTodayList);
         }
-    }
-
-    public void justifyListViewHeightBasedOnChildren(RecyclerView list) {
-        EventsAdapter adapter = (EventsAdapter) list.getAdapter();
-        if (adapter == null)
-            return;
-        int totalHeight = list.getHeight();
-
-        System.out.println(totalHeight);
-        ViewGroup.LayoutParams par = list.getLayoutParams();
-        par.height = totalHeight;
-        list.setLayoutParams(par);
-        list.requestLayout();
     }
 
     @Override
