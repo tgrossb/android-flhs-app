@@ -1,6 +1,7 @@
 package com.flhs.home;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -8,6 +9,8 @@ import java.util.Locale;
 import com.flhs.FLHSActivity;
 import com.flhs.R;
 import com.flhs.SignInActivity;
+import com.flhs.preloader.InitialLoader;
+import com.flhs.preloader.LoaderThread;
 import com.flhs.utils.AccountInfo;
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.EventsAdapter;
@@ -19,6 +22,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.DialogFragment;
+import android.os.Debug;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 
@@ -27,9 +31,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
-public class HomeActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener {
+public class HomeActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener, InitialLoader.OnReloadFinish {
     public static boolean noSignIn = true;
     public static boolean dontRemember = true;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -47,9 +52,6 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
             signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(signIn);
         }
-
-        String[] loadStrings = {"Loading events from the internet....."};
-        ArrayAdapter<String> loadingAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, loadStrings);
 
         mProgress = findViewById(R.id.progress_bar);
         swipeRefreshLayout = findViewById(R.id.swiperefresh);
@@ -85,14 +87,17 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         sportsEventsTodayList.setLayoutManager(new NPALayoutManager(this));
 
         dateView = findViewById(R.id.dateHeader);
-        tryToConnect();
+
+        preload();
+        onReloadFinish();
     }
 
     public void tryToConnect(){
         swipeRefreshLayout.setRefreshing(false);
         if (isOnline()) {
-            // Start loading the events if connected
-            new EventsLoaderThread().execute();
+            // Refresh the vevents and ical
+            preload();
+            InitialLoader.reload(this, this);
         } else {
             // Show the connection error dialog if not connected
             ConnectionErrorFragment connectionError = new ConnectionErrorFragment();
@@ -101,75 +106,59 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
         }
     }
 
-    // Load the events from the internet asynchronously
-    class EventsLoaderThread extends AsyncTask<Void, Void, Void> {
-        private ArrayList<EventObject> eventsToday;
-        private ArrayList<EventObject> sportsEventsToday;
-
-        @Override
-        protected void onPreExecute() {
-            dateView.setText("Loading...");
+    public void preload(){
+        dateView.setText("Loading...");
 //            eventsTodayList.removeAllViews();
 //            sportsEventsTodayList.removeAllViews();
-            EventsAdapter eventsAdapter = (EventsAdapter) eventsTodayList.getAdapter();
-            EventsAdapter sportsAdapter = (EventsAdapter) sportsEventsTodayList.getAdapter();
-            if (eventsAdapter != null)
-                eventsAdapter.removeAllItems();
-            if (sportsAdapter != null)
-                sportsAdapter.removeAllItems();
-            mProgress.setVisibility(ProgressBar.VISIBLE);
-        }
+        EventsAdapter eventsAdapter = (EventsAdapter) eventsTodayList.getAdapter();
+        EventsAdapter sportsAdapter = (EventsAdapter) sportsEventsTodayList.getAdapter();
+        if (eventsAdapter != null)
+            eventsAdapter.removeAllItems();
+        if (sportsAdapter != null)
+            sportsAdapter.removeAllItems();
+        mProgress.setVisibility(ProgressBar.VISIBLE);
+    }
 
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            eventsToday = ParserA.parseEventsToday();
-            sportsEventsToday = ParserA.printSportsToday();
-            return null;
-        }
+    @Override
+    public void onReloadFinish(){
+        Date today = new Date();
 
+        String veventToday = InitialLoader.veventDate.format(today);
+        ArrayList<EventObject> eventsToday = InitialLoader.eventfulDays.getOrDefault(veventToday, new ArrayList<EventObject>());
 
-        @Override
-        protected void onPostExecute(Void result) {
-            // Format date to be "DayOfWeek Month Day, Year"
-            SimpleDateFormat dateFormat = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US);
-            String date = dateFormat.format(new Date());
-            dateView.setText(date);
+        ArrayList<EventObject> sportsEventsToday = new ArrayList<>();
 
-            if (eventsToday == null) {
-                if (getApplicationContext().equals(HomeActivity.this)){
-                    ConnectionErrorFragment errorAlert = new ConnectionErrorFragment();
-                    errorAlert.show(getFragmentManager(), "Connection Error");
-                }
-                eventsToday = new ArrayList<>(1);
-                eventsToday.add(new EventObject("Try again soon", "Couldn't connect to bcsdny.org....."));
-            } else if (eventsToday.size() == 0)
-                eventsToday.add(new EventObject("All day", "No Events Today!"));
+        // Format date to be "DayOfWeek Month Day, Year"
+        String viewableToday = InitialLoader.viewableDate.format(today);
+        dateView.setText(viewableToday);
 
-            if (sportsEventsToday == null) {
-                if (getApplicationContext().equals(HomeActivity.this)){
-                    ConnectionErrorFragment errorAlert = new ConnectionErrorFragment();
-                    errorAlert.show(getFragmentManager(), "Connection Error");
-                }
-                sportsEventsToday = new ArrayList<>(1);
-                sportsEventsToday.add(new EventObject("Try again soon", "Couldn't connect to sportspak.swboces.org....."));
-            } else if (sportsEventsToday.size() == 0)
-                sportsEventsToday.add(new EventObject("All day", "No Events Today!"));
+        if (eventsToday.size() == 0)
+            eventsToday.add(EventObject.noEvents());
+
+        if (sportsEventsToday == null) {
+            if (getApplicationContext().equals(HomeActivity.this)){
+                ConnectionErrorFragment errorAlert = new ConnectionErrorFragment();
+                errorAlert.show(getFragmentManager(), "Connection Error");
+            }
+            sportsEventsToday = new ArrayList<>(1);
+            sportsEventsToday.add(new EventObject("Try again soon", "Couldn't connect to sportspak.swboces.org....."));
+        } else if (sportsEventsToday.size() == 0)
+            sportsEventsToday.add(new EventObject("All day", "No Sports Events Today!"));
 
 
-            //Events Today ListView
-            EventsAdapter eventsTodayAdapter = new EventsAdapter(eventsToday, getResources().getColor(R.color.soft_red));
-            eventsTodayList.setAdapter(eventsTodayAdapter);
+        //Events Today ListView
+        EventsAdapter eventsTodayAdapter = new EventsAdapter(eventsToday, getResources().getColor(R.color.soft_red));
+        eventsTodayList.setAdapter(eventsTodayAdapter);
 
-            //SportsNews ListView
-            EventsAdapter sportsEventsTodayAdapter = new EventsAdapter(sportsEventsToday, getResources().getColor(R.color.soft_blue));
-            sportsEventsTodayList.setAdapter(sportsEventsTodayAdapter);
+        //SportsNews ListView
+        EventsAdapter sportsEventsTodayAdapter = new EventsAdapter(sportsEventsToday, getResources().getColor(R.color.soft_blue));
+        sportsEventsTodayList.setAdapter(sportsEventsTodayAdapter);
 
-            eventsTodayList.setClickable(false);
-            sportsEventsTodayList.setClickable(false);
-            mProgress.setVisibility(ProgressBar.INVISIBLE);
+        eventsTodayList.setClickable(false);
+        sportsEventsTodayList.setClickable(false);
+        mProgress.setVisibility(ProgressBar.INVISIBLE);
 //            justifyListViewHeightBasedOnChildren(eventsTodayList);
 //            justifyListViewHeightBasedOnChildren(sportsEventsTodayList);
-        }
     }
 
     @Override

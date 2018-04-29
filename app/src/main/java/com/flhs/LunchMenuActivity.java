@@ -8,12 +8,17 @@ import android.view.Menu;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class LunchMenuActivity extends FLHSActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState, R.layout.activity_lunch_menu);
 
-        WebView LunchMenuPDFReader = (WebView) findViewById(R.id.Lunch_Menu_Web_View);
+        WebView LunchMenuPDFReader = findViewById(R.id.Lunch_Menu_Web_View);
 
         //I skipped this part.... too lazy to check for Google Drive Viewer Consistencies..... I just put the Google Drive Viewer URL directly in
         String PDFReaderURL = Formatter.googleDriveViewerURLFormat("http://bcsdny.org/files/filesystem/flmsflhslunchmenu1.pdf");
@@ -23,7 +28,11 @@ public class LunchMenuActivity extends FLHSActivity {
         settings.setJavaScriptEnabled(true);
         settings.setBuiltInZoomControls(true);
         settings.setDisplayZoomControls(true);
-        LunchMenuPDFReader.loadUrl("http://docs.google.com/gview?embedded=true&url=" + new Database().getLunchMenuURL());
+        SimpleDateFormat urlForm = new SimpleDateFormat("MMMM'MsHs'yy", Locale.US);
+        String url = "http://www.bcsdny.org/site/handlers/filedownload.ashx?moduleinstanceid=2804&dataid=7941&FileName=" + urlForm.format(new Date()) + "Lunch.pdf";
+        url = "http://docs.google.com/gview?embedded=true&url=" + url;
+        LunchMenuPDFReader.loadUrl(url);
+        System.out.println(url);
     }
 /*Just might be useful someday with UP navigation in Action Bar....
     **

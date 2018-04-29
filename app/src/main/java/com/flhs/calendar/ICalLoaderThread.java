@@ -41,9 +41,7 @@ public class ICalLoaderThread extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPreExecute() {
-        dateViewRef.get().setText("Loading...");
-        calendarRef.get().setVisibility(View.INVISIBLE);
-        progressBarRef.get().setVisibility(ProgressBar.VISIBLE);
+
     }
 
     @Override

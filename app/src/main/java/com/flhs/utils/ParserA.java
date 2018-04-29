@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.flhs.preloader.InitialLoader;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 
 import java.io.BufferedInputStream;
@@ -41,8 +42,6 @@ public class ParserA {
     final static int LATE_LUNCH = 2;
     public static final String BEGIN = "BEGIN:VEVENT", END = "END:VEVENT", DTSTART = "DTSTART:",
                             DTEND = "DTEND:", DURATION = "DURATION:", SUMMARY = "SUMMARY:";
-    public static final SimpleDateFormat veventForm = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US);
-    public static final SimpleDateFormat veventFormNoTime = new SimpleDateFormat("yyyyMMdd", Locale.US);
     public static final String DISTRICT_CALENDAR = "https://www.bcsdny.org/site/handlers/icalfeed.ashx?MIID=2047";
     public static final String FLHS_CALENDAR = "https://www.bcsdny.org/site/handlers/icalfeed.ashx?MIID=2048";
 
@@ -70,7 +69,7 @@ public class ParserA {
         vevents[vevents.length-1] = vevents[vevents.length-1].substring(0, lastEnd);
 
         HashMap<String, ArrayList<EventObject>> eventfulDays = getEventfulDays(vevents);
-        String todayFormed = veventFormNoTime.format(today);
+        String todayFormed = InitialLoader.veventDate.format(today);
         if (eventfulDays.containsKey(todayFormed))
             return eventfulDays.get(todayFormed);
         return new ArrayList<>();
@@ -93,7 +92,7 @@ public class ParserA {
             String time = getTime(vevent);
             while (startCal.before(endCal)){
                 Date betweenUnformed = startCal.getTime();
-                String between = veventFormNoTime.format(betweenUnformed);
+                String between = InitialLoader.veventDate.format(betweenUnformed);
                 EventObject event = new EventObject(time, description);
                 if (eventfulDays.containsKey(between))
                     eventfulDays.get(between).add(event);
@@ -183,7 +182,7 @@ public class ParserA {
     public static Date fromVeventDate(String dateString){
         Date date = null;
         try {
-            date = veventForm.parse(dateString);
+            date = InitialLoader.veventDateTime.parse(dateString);
         } catch (ParseException e) {
             if (!dateString.matches("[0-9]+")){
                 Log.i("Parse warning", "Error parsing " + dateString + " with time");
@@ -192,7 +191,7 @@ public class ParserA {
         } catch (NullPointerException e){}
         if (date == null) {
             try {
-                date = veventFormNoTime.parse(dateString);
+                date = InitialLoader.veventDate.parse(dateString);
             } catch (ParseException e) {
                 Log.e("Parse error", "Error parsing " + dateString + " without time");
                 e.printStackTrace();

@@ -39,6 +39,9 @@ public class EventfulDayFragment extends Fragment {
             e.printStackTrace();
         }
 
+        if (events.size() == 0)
+            events.add(EventObject.noEvents());
+
         RecyclerView recycler = view.findViewById(R.id.recycler);
         recycler.setLayoutManager(new NPALayoutManager(getActivity()));
         recycler.setAdapter(new EventsAdapter(events, EventsAdapter.color(getActivity(), R.color.soft_red)));

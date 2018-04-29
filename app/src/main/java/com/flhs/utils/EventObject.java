@@ -38,6 +38,10 @@ public class EventObject implements Parcelable {
         return time;
     }
 
+    public static EventObject noEvents(){
+        return new EventObject("All day", "No Events Today!");
+    }
+
     @Override
     public int describeContents(){
         return 0;

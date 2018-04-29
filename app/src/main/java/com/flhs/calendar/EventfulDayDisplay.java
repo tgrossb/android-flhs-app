@@ -20,13 +20,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CalendarView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Space;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.flhs.FLHSActivity;
 import com.flhs.R;
+import com.flhs.preloader.InitialLoader;
+import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.EventObject;
 import com.flhs.utils.EventsAdapter;
 import com.flhs.utils.NPALayoutManager;
@@ -46,14 +51,16 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-public class EventfulDayDisplay extends FLHSActivity implements OnDateSelectedListener {
-    public static final String CLICKED_DAY = "cd", EVENTS = "e", START_DAY = "sd", END_DAY = "ed", DECORATORS = "d";
+public class EventfulDayDisplay extends FLHSActivity implements OnDateSelectedListener, InitialLoader.OnReloadFinish {
+    public static final String CLICKED_DAY = "cd", DECORATORS = "d";
     public static SimpleDateFormat formatter = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US);
-    private String dateString;
-    private HashMap<String, ArrayList<EventObject>> events;
-    private long startDate, endDate;
+    private String dateString, todayString;
     private ViewPager pager;
     private MaterialCalendarView calendarView;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private TextView dateHeader;
+    private ImageButton todayButton;
+    private ProgressBar progressBar;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -62,9 +69,6 @@ public class EventfulDayDisplay extends FLHSActivity implements OnDateSelectedLi
 
         Intent intent = getIntent();
         dateString = intent.getStringExtra(CLICKED_DAY);
-        events = (HashMap) intent.getSerializableExtra(EVENTS);
-        startDate = intent.getLongExtra(START_DAY, 0);
-        endDate = intent.getLongExtra(END_DAY, 0);
 
         Date setDate;
         try {
@@ -78,8 +82,8 @@ public class EventfulDayDisplay extends FLHSActivity implements OnDateSelectedLi
         calendarView.setDateSelected(setDate, true);
         calendarView.setOnDateChangedListener(this);
         calendarView.state().edit()
-                .setMinimumDate(new Date(startDate))
-                .setMaximumDate(new Date(endDate))
+                .setMinimumDate(InitialLoader.firstCalendarDay)
+                .setMaximumDate(InitialLoader.lastCalendarDay)
                 .commit();
 
         ArrayList<EventDecorator> decorators = intent.getParcelableArrayListExtra(DECORATORS);
@@ -87,48 +91,99 @@ public class EventfulDayDisplay extends FLHSActivity implements OnDateSelectedLi
             calendarView.addDecorator(decorator);
 
         pager = findViewById(R.id.pager);
-        pager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), events, startDate, endDate));
+        pager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
             @Override
             public void onPageSelected(int position){
-                Date date = fromPos(position, startDate);
+                Date date = fromPos(position, InitialLoader.firstCalendarDayMS);
                 calendarView.setCurrentDate(date);
                 calendarView.setSelectedDate(date);
             }
         });
 
-        pager.setCurrentItem(toPos(setDate, startDate));
+        // Set date will be at midnight, add a millisecond to handle this
+        int pos = toPos(setDate.getTime()+1, InitialLoader.firstCalendarDayMS);
+        System.out.println("Today  " + setDate.toString() + " => " + pos);
+        pager.setCurrentItem(pos);
+
+        dateHeader = findViewById(R.id.dateHeader);
+        todayButton = findViewById(R.id.today);
+        progressBar = findViewById(R.id.spinner);
+
+        todayString = InitialLoader.viewableDate.format(new Date());
+        dateHeader.setText(todayString);
+        todayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                calendarView.setDateSelected(calendarView.getSelectedDate(), false);
+                Date today = new Date();
+                calendarView.setCurrentDate(today);
+                calendarView.setDateSelected(today, true);
+                pager.setCurrentItem(toPos(today.getTime(), InitialLoader.firstCalendarDayMS));
+            }
+        });
+
+        swipeRefreshLayout = findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                tryToConnect();
+            }
+        });
     }
 
-    public static Intent getStartIntent(Context context, CalendarDay clickedDay, HashMap<String, ArrayList<EventObject>> eventfulDays,
-                                        Calendar startDay, Calendar endDay, ArrayList<EventDecorator> decorators){
+    public void tryToConnect(){
+        swipeRefreshLayout.setRefreshing(false);
+        if (isOnline()) {
+            preload();
+            // Start loading the events if connected
+            InitialLoader.reload(this, this);
+        } else {
+            // Show the connection error dialog if not connected
+            ConnectionErrorFragment connectionError = new ConnectionErrorFragment();
+            connectionError.show(getFragmentManager(), "Connection Error");
+            reversePreload();
+        }
+    }
+
+    public void preload(){
+        calendarView.setVisibility(View.INVISIBLE);
+        pager.setVisibility(View.INVISIBLE);
+
+        dateHeader.setText("Loading...");
+        todayButton.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void reversePreload(){
+        calendarView.setVisibility(View.VISIBLE);
+        pager.setVisibility(View.VISIBLE);
+
+        dateHeader.setText(todayString);
+        todayButton.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
+
+        // Trigger a pager view update
+        pager.setCurrentItem(pager.getCurrentItem(), false);
+    }
+
+    @Override
+    public void onReloadFinish(){
+        reversePreload();
+    }
+
+    public static Intent getStartIntent(Context context, CalendarDay clickedDay, ArrayList<EventDecorator> decorators){
         Intent start = new Intent(context.getApplicationContext(), EventfulDayDisplay.class);
         start.putExtra(CLICKED_DAY, formatter.format(clickedDay.getDate()));
-        start.putExtra(EVENTS, eventfulDays);
-        start.putExtra(START_DAY, startDay.getTimeInMillis());
-        start.putExtra(END_DAY, endDay.getTimeInMillis());
         start.putParcelableArrayListExtra(DECORATORS, decorators);
         return start;
-    }
-
-    public static int toPos(Date d1, long startMs){
-        long msDiff = d1.getTime() - startMs;
-        if (msDiff > 0)
-            return (int) TimeUnit.DAYS.convert(msDiff, TimeUnit.MILLISECONDS) + 1;
-        return 0;
-    }
-
-    public static Date fromPos(int pos, long startMs){
-        if (pos == 0)
-            return new Date(startMs);
-        long msDiff = TimeUnit.MILLISECONDS.convert(pos, TimeUnit.DAYS);
-        return new Date(startMs + msDiff);
     }
 
     @Override
     public void onDateSelected(MaterialCalendarView matCal, CalendarDay calDay, boolean selected){
         if (selected)
-            pager.setCurrentItem(toPos(calDay.getDate(), startDate));
+            // CalendarDay objects are set at midnight, roll it forward a millisecond to handle this
+            pager.setCurrentItem(toPos(calDay.getDate().getTime() + 100, InitialLoader.firstCalendarDayMS));
     }
 
     @Override
@@ -139,26 +194,36 @@ public class EventfulDayDisplay extends FLHSActivity implements OnDateSelectedLi
         startActivity(backToCal);
     }
 
-    private class ViewPagerAdapter extends FragmentPagerAdapter {
-        private HashMap<String, ArrayList<EventObject>> eventfulDays;
-        private int dayCount;
-        private long startMs;
+    public static int toPos(long endMs, long startMs){
+        long msDiff = endMs - startMs;
+        if (msDiff > 0)
+            return (int) TimeUnit.DAYS.convert(msDiff, TimeUnit.MILLISECONDS);
+        return 0;
+    }
 
-        public ViewPagerAdapter(FragmentManager manager, HashMap<String, ArrayList<EventObject>> eventfulDays, long startMs, long endMs){
+    public static Date fromPos(int pos, long startMs){
+        if (pos == 0)
+            return new Date(startMs);
+        long msDiff = TimeUnit.MILLISECONDS.convert(pos, TimeUnit.DAYS);
+        return new Date(startMs + msDiff);
+    }
+
+    private class ViewPagerAdapter extends FragmentPagerAdapter {
+        private int dayCount;
+
+        public ViewPagerAdapter(FragmentManager manager){
             super(manager);
-            this.eventfulDays = eventfulDays;
-            long diffInMs = endMs - startMs;
+            long diffInMs = InitialLoader.lastCalendarDayMS - InitialLoader.firstCalendarDayMS;
             this.dayCount = (int) TimeUnit.DAYS.convert(diffInMs, TimeUnit.MILLISECONDS);
-            this.startMs = startMs;
         }
 
         @Override
         public Fragment getItem(int pos){
             Calendar start = Calendar.getInstance();
-            start.setTimeInMillis(startMs);
+            start.setTimeInMillis(InitialLoader.firstCalendarDayMS);
             start.add(Calendar.DAY_OF_YEAR, pos);
-            String key = ParserA.veventFormNoTime.format(start.getTime());
-            ArrayList<EventObject> events = eventfulDays.get(key);
+            String key = InitialLoader.veventDate.format(start.getTime());
+            ArrayList<EventObject> events = InitialLoader.eventfulDays.get(key);
             if (events == null) {
                 events = new ArrayList<>();
             }

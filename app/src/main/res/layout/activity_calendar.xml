@@ -45,7 +45,6 @@
                         android:padding="0dp"
                         android:scaleType="centerCrop"
                         android:src="@drawable/calendar_icon_red"
-                        android:visibility="invisible"
                         android:background="@color/gray"
                         android:contentDescription="Go to today"/>
 
@@ -56,7 +55,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentTop="true"
                         android:progressTint="@color/black"
-                        android:visibility="visible" />
+                        android:visibility="invisible" />
                 </RelativeLayout>
 
                 <Space

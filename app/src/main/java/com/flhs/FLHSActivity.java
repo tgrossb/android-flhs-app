@@ -30,7 +30,11 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
     public static String[] vevents;
 
     public boolean isOnline() {
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return isOnline(this);
+    }
+
+    public static boolean isOnline(Context context){
+        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = null;
         try {
             networkInfo = connMgr.getActiveNetworkInfo();

@@ -8,23 +8,69 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/gray"
         android:orientation="vertical">
 
         <include layout="@layout/toolbar" />
 
-        <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:mcv_calendarMode="week"
-            android:id="@+id/weeksView">
-        </com.prolificinteractive.materialcalendarview.MaterialCalendarView>
+            android:layout_height="match_parent">
 
-        <android.support.v4.view.ViewPager
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/pager">
-        </android.support.v4.view.ViewPager>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/gray"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:id="@+id/dateHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/headerpt"
+                        android:textColor="@color/black"
+                        android:text="Date Here..."/>
+
+                    <ImageButton
+                        android:id="@+id/today"
+                        android:layout_width="40sp"
+                        android:layout_height="40sp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true"
+                        android:padding="0dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/calendar_icon_red"
+                        android:background="@color/gray"
+                        android:contentDescription="Go to today"/>
+
+                    <ProgressBar
+                        android:id="@+id/spinner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true"
+                        android:visibility="invisible"/>
+                </RelativeLayout>
+
+                <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+                    android:id="@+id/weeksView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:mcv_calendarMode="week"
+                    android:layout_margin="0dp"/>
+
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="0dp"/>
+            </LinearLayout>
+        </android.support.v4.widget.SwipeRefreshLayout>
     </LinearLayout>
 
     <include layout="@layout/navigation_drawer" />
