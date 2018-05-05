@@ -10,18 +10,31 @@
 
         <include layout="@layout/toolbar" />
 
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="@dimen/activity_vertical_margin"
-            tools:context=".LunchMenuActivity">
+            android:background="@color/gray"
+            android:padding="@dimen/activity_vertical_margin">
 
-            <WebView
-                android:id="@+id/Lunch_Menu_Web_View"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </RelativeLayout>
+                android:layout_height="match_parent">
+
+                <com.github.barteksc.pdfviewer.PDFView
+                    android:id="@+id/lunchMenuViewer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/gray"
+                    android:layout_centerInParent="true"/>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+        </android.support.v4.widget.SwipeRefreshLayout>
     </LinearLayout>
 
     <include layout="@layout/navigation_drawer" />

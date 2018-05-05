@@ -1,7 +1,11 @@
 ## Welcome to version 2.0
 This is the almost completely redone version of the android app.  It does not yet include user sign in, and I am working on moving async downloads 
 to a loading screen at the begining with nice, scrolling images.  However, the home screen, calendar, and announcements are reworked completely, especially 
-the calendar.  Lunch menu still needs to be done, and who knows what's going on with sports.  Once these things are done, 2.0 will be ready for release!
+the calendar.  Lunch menu is also fixed, but currently using an external library.  I would love to get the pdf viewing using native libraries. Once these things are done, 2.0 will be ready for release!
+
+## Neeeeewwwwww BUG
+The navigation drawer item selection is suuuppppeeeerr buggy right now.  It's too late for me to finish fixing it though tonight, because I think it might need an in depth tracking to figure 
+out the logic of the switches.  Yay.
 
 ## AndroidFLHSApp Directory Organization
 This is the source code for the unpackaged Android App.

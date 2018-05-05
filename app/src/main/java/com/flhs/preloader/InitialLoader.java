@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -33,14 +35,21 @@ import java.util.Locale;
 public class InitialLoader extends AppCompatActivity implements LoaderThread.OnFinish, ConnectionErrorFragment.AlertDialogListener {
     public static final int finishDelay = 500;
     public static final int panDuration = 10000;
+    public static final int ITEM_SELECTED_DELAY = 100;
+
     public static String[] vevents;
     public static String ical;
     public static Calendar firstCalendarDay, lastCalendarDay;
     public static long firstCalendarDayMS, lastCalendarDayMS;
     public static HashMap<String, ArrayList<EventObject>> eventfulDays;
+    public static byte[] menuBytes;
+    public static SparseIntArray contentIdToNavId, contentIdToPos, navIdToBlackIcon, navIdToRedIcon;
+    public static SparseArray<Class> navIdToClass;
+
     public static final SimpleDateFormat viewableDate = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US);
     public static final SimpleDateFormat veventDateTime = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US);
     public static final SimpleDateFormat veventDate = new SimpleDateFormat("yyyyMMdd", Locale.US);
+
     private TextView loadingText;
 
     public interface OnReloadFinish {
@@ -86,13 +95,13 @@ public class InitialLoader extends AppCompatActivity implements LoaderThread.OnF
     }
 
     @Override
-    public void onFinish(String ical, String[] vevents, HashMap<String, ArrayList<EventObject>> eventfulDays){
-        if (ical == LoaderThread.FAIL) {
+    public void onFinish(LoaderThread.ResultBundle resultBundle){
+        if (resultBundle == LoaderThread.FAIL) {
             tryToConnect();
             return;
         }
 
-        assign(ical, vevents, eventfulDays);
+        assign(resultBundle);
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -105,10 +114,17 @@ public class InitialLoader extends AppCompatActivity implements LoaderThread.OnF
         }, finishDelay);
     }
 
-    public static void assign(String ical, String[] vevents, HashMap<String, ArrayList<EventObject>> eventfulDays){
-        InitialLoader.ical = ical;
-        InitialLoader.vevents = vevents;
-        InitialLoader.eventfulDays = eventfulDays;
+    public static void assign(LoaderThread.ResultBundle resultBundle){
+        InitialLoader.ical = resultBundle.ical;
+        InitialLoader.vevents = resultBundle.vevents;
+        InitialLoader.eventfulDays = resultBundle.eventfulDays;
+        InitialLoader.menuBytes = resultBundle.menuBytes;
+        InitialLoader.contentIdToNavId = resultBundle.contentIdToNavId;
+        InitialLoader.contentIdToPos = resultBundle.contentIdToPos;
+        InitialLoader.navIdToBlackIcon = resultBundle.navIdToBlackIcon;
+        InitialLoader.navIdToRedIcon = resultBundle.navIdToRedIcon;
+        InitialLoader.navIdToClass = resultBundle.navIdToClass;
+
 
         // Get soft first and last days, changed later when exceeded
         Date today = new Date();
@@ -168,11 +184,11 @@ public class InitialLoader extends AppCompatActivity implements LoaderThread.OnF
         if (FLHSActivity.isOnline(activity)){
             new LoaderThread(new LoaderThread.OnFinish() {
                 @Override
-                public void onFinish(String ical, String[] vevents, HashMap<String, ArrayList<EventObject>> eventfulDays) {
-                    if (ical == LoaderThread.FAIL)
+                public void onFinish(LoaderThread.ResultBundle resultBundle) {
+                    if (resultBundle == LoaderThread.FAIL)
                         return;
 
-                    InitialLoader.assign(ical, vevents, eventfulDays);
+                    InitialLoader.assign(resultBundle);
 
                     onReloadFinish.onReloadFinish();
                 }

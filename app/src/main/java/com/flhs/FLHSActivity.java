@@ -22,18 +22,18 @@ import android.widget.Toast;
 import com.flhs.announcements.AnnouncementActivity;
 import com.flhs.calendar.CalendarActivity;
 import com.flhs.home.HomeActivity;
+import com.flhs.preloader.InitialLoader;
 
 public class FLHSActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private final Handler drawerActionHandler = new Handler();
-    public static String[] vevents;
 
     public boolean isOnline() {
         return isOnline(this);
     }
 
-    public static boolean isOnline(Context context){
+    public static boolean isOnline(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = null;
         try {
@@ -49,12 +49,6 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstances);
         setContentView(contentId);
 
-        buildContentIdToNavId();
-        buildContentIdToPos();
-        buildNavIdToClass();
-        buildNavIdToBlackIcon();
-        buildNavIdToRedIcon();
-
         drawerLayout = findViewById(R.id.drawer_layout);
         Toolbar bar = findViewById(R.id.toolbar);
         bar.setLogo(null);
@@ -69,12 +63,13 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = findViewById(R.id.nav_drawer);
         navigationView.setItemIconTintList(null);
         navigationView.setNavigationItemSelectedListener(this);
-        int navId = contentIdToNavId.get(contentId, -1);
-        int pos = contentIdToPos.get(contentId, -1);
+        navigationView.getMenu().setGroupCheckable(R.id.itemGroup, true, true);
+        int navId = InitialLoader.contentIdToNavId.get(contentId, -1);
+        int pos = InitialLoader.contentIdToPos.get(contentId, -1);
         if (pos > -1 && navId > -1) {
-            MenuItem item = navigationView.getMenu().getItem(pos);
-            item.setIcon(navIdToRedIcon.get(navId));
-            item.setChecked(true);
+//            MenuItem item = navigationView.getMenu().getItem(pos);
+//            item.setIcon(InitialLoader.navIdToRedIcon.get(navId));
+//            item.setChecked(true);
         }
 
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, bar, R.string.drawer_open, R.string.drawer_close);
@@ -108,92 +103,49 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
-    public void navigate(int itemId){
-        Intent switchIntent = new Intent(getApplicationContext(), navIdToClass.get(itemId, HomeActivity.class));
+    public void navigate(int itemId) {
+        Intent switchIntent = new Intent(getApplicationContext(), InitialLoader.navIdToClass.get(itemId, HomeActivity.class));
         startActivity(switchIntent);
     }
 
     @Override
-    public boolean onNavigationItemSelected(final MenuItem item){
-        item.setIcon(navIdToRedIcon.get(item.getItemId()));
-        item.setChecked(true);
+    public boolean onNavigationItemSelected(final MenuItem item) {
+        Toast.makeText(this, "Navigation item selected", Toast.LENGTH_SHORT).show();
+        //        item.setIcon(InitialLoader.navIdToRedIcon.get(item.getItemId()));
+        item.setChecked(false);
+        ((NavigationView)findViewById(R.id.nav_drawer)).setCheckedItem(R.id.dummyItem);
 
         drawerLayout.closeDrawers();
-        drawerActionHandler.postDelayed(new Runnable(){
+        drawerActionHandler.postDelayed(new Runnable() {
             @Override
-            public void run(){
+            public void run() {
                 navigate(item.getItemId());
             }
-        }, 300); // Delay in ms
+        }, InitialLoader.ITEM_SELECTED_DELAY); // Delay in ms
         return true;
     }
 
     @Override
-    public void onConfigurationChanged(final Configuration newConfig){
+    public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public static void buildContentIdToNavId(){
-        if (contentIdToNavId != null)
-            return;
-        contentIdToNavId = new SparseIntArray(6);
-        contentIdToNavId.put(R.layout.activity_announcement, R.id.nav_announcements);
-        contentIdToNavId.put(R.layout.activity_calendar, R.id.nav_calendar);
-        contentIdToNavId.put(R.layout.activity_lunch_menu, R.id.nav_lunch_menu);
-        contentIdToNavId.put(R.layout.activity_sports_navigation, R.id.nav_sports);
-        contentIdToNavId.put(R.layout.temp_sports, R.id.nav_sports);
-        contentIdToNavId.put(R.layout.activity_schedule, R.id.nav_bell_schedule);
+    public void clearMenuIcons() {
+//        Menu navigationMenu = navigationView.getMenu();
+//        System.out.println("Menu size: " + navigationMenu.size());
+//        for (int c = 0; c < navigationMenu.size(); c++) {
+//            MenuItem item = navigationMenu.getItem(c);
+//            item.setIcon(InitialLoader.navIdToBlackIcon.get(item.getItemId()));
+//            item.setChecked(false);
+//        }
     }
 
-    public static void buildContentIdToPos(){
-        if (contentIdToPos != null)
-            return;
-        contentIdToPos = new SparseIntArray(6);
-        contentIdToPos.put(R.layout.activity_announcement, 0);
-        contentIdToPos.put(R.layout.activity_calendar, 1);
-        contentIdToPos.put(R.layout.activity_lunch_menu, 2);
-        contentIdToPos.put(R.layout.activity_sports_navigation, 3);
-        contentIdToPos.put(R.layout.temp_sports, 3);
-        contentIdToPos.put(R.layout.activity_schedule, 4);
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
+//        clearMenuIcons();
+//        navigationView.getMenu().getItem(0).setChecked(true);
+        super.onBackPressed();
     }
-
-    public static void buildNavIdToClass() {
-        if (navIdToClass != null)
-            return;
-        navIdToClass = new SparseArray<>(5);
-        navIdToClass.put(R.id.nav_announcements, AnnouncementActivity.class);
-        navIdToClass.put(R.id.nav_bell_schedule, ScheduleActivity.class);
-        navIdToClass.put(R.id.nav_calendar, CalendarActivity.class);
-        navIdToClass.put(R.id.nav_lunch_menu, LunchMenuActivity.class);
-        navIdToClass.put(R.id.nav_sports, TempSportsActivity.class);
-    }
-
-    public static void buildNavIdToBlackIcon(){
-        if (navIdToBlackIcon != null)
-            return;
-        navIdToBlackIcon = new SparseIntArray(5);
-        navIdToBlackIcon.put(R.id.nav_announcements, R.drawable.announcements_icon_black);
-        navIdToBlackIcon.put(R.id.nav_calendar, R.drawable.calendar_icon_black);
-        navIdToBlackIcon.put(R.id.nav_lunch_menu, R.drawable.lunch_menu_black);
-        navIdToBlackIcon.put(R.id.nav_sports, R.drawable.sports_icon_black);
-        navIdToBlackIcon.put(R.id.nav_bell_schedule, R.drawable.schedule_black);
-    }
-
-    public static void buildNavIdToRedIcon(){
-        if (navIdToRedIcon != null)
-            return;
-        navIdToRedIcon = new SparseIntArray(5);
-        navIdToRedIcon.put(R.id.nav_announcements, R.drawable.announcements_icon_red);
-        navIdToRedIcon.put(R.id.nav_calendar, R.drawable.calendar_icon_red);
-        navIdToRedIcon.put(R.id.nav_lunch_menu, R.drawable.lunch_menu_red);
-        navIdToRedIcon.put(R.id.nav_sports, R.drawable.sports_icon_red);
-        navIdToRedIcon.put(R.id.nav_bell_schedule, R.drawable.schedule_red);
-    }
-
-    public static SparseIntArray contentIdToNavId;
-    public static SparseIntArray contentIdToPos;
-    public static SparseArray<Class> navIdToClass;
-    public static SparseIntArray navIdToBlackIcon;
-    public static SparseIntArray navIdToRedIcon;
 }
