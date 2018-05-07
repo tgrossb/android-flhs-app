@@ -31,40 +31,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <Button
-                    android:id="@+id/refresh"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:drawableRight="@drawable/refresh"
-                    android:drawableEnd="@drawable/refresh"
-                    android:visibility="invisible"/>
-
                 <TextView
                     android:id="@+id/date"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:singleLine="true"
-                    android:text="Loading"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Loading..."
                     android:textColor="@color/black"
-                    android:textSize="@dimen/headerpt"
-                    android:layout_toStartOf="@+id/refresh"
-                    android:layout_toLeftOf="@+id/refresh"/>
+                    android:textSize="@dimen/headerpt" />
 
                 <TextView
                     android:id="@+id/dayType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:singleLine="true"
                     android:visibility="invisible"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/black"
@@ -79,7 +59,7 @@
                     android:layout_alignParentTop="true" />
             </RelativeLayout>
 
-            <View
+            <Space
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/vertspacing" />
 

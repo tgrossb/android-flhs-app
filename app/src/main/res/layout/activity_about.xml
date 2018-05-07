@@ -17,6 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clickable="true"
+            android:background="@color/gray"
+            android:padding="@dimen/activity_vertical_margin"
             android:id="@+id/mRelativeLayout">
 
             <TextView
@@ -34,8 +36,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:text="Version: 1.1"
+                android:layout_alignParentStart="true"
+                android:text="Version: 2.0"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 />
 
@@ -44,8 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_above="@+id/textView4"
-                android:layout_alignParentLeft="true"
-                android:text="Released: Nov 19, 2014" />
+                android:layout_alignParentStart="true"
+                android:text="Released: May 8, 2018" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -61,9 +63,9 @@
                 android:layout_width="90sp"
                 android:layout_height="90sp"
                 android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:id="@+id/Logo"
-                android:src="@drawable/fox_lane_logo" />
+                android:src="@drawable/logo_clear_back" />
 
         </RelativeLayout>
     </LinearLayout>

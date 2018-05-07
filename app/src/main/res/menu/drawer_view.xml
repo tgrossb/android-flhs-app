@@ -26,9 +26,5 @@
             android:icon="@drawable/schedule_black"
             android:checkable="true"
             android:title="@string/title_activity_schedule"/>
-        <item
-            android:id="@+id/dummyItem"
-            android:checkable="true"
-            android:title="Dummy"/>
     </group>
 </menu>

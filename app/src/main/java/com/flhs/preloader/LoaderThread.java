@@ -2,6 +2,7 @@ package com.flhs.preloader;
 
 import android.app.DownloadManager;
 import android.os.AsyncTask;
+import android.text.Html;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -15,10 +16,16 @@ import com.flhs.ScheduleActivity;
 import com.flhs.TempSportsActivity;
 import com.flhs.announcements.AnnouncementActivity;
 import com.flhs.calendar.CalendarActivity;
+import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.EventObject;
 import com.flhs.utils.ParserA;
 import com.google.android.gms.common.util.IOUtils;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -91,6 +98,30 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         }
         results.setMenuBytes(menuBytes);
 
+        publishProgress("Loading announcements from BCSD...");
+        String url = "https://www.bcsdny.org/domain/154";
+        Document announce;
+        try {
+            announce = Jsoup.connect(url).get();
+            Element announceEl = announce.getElementsByClass("ui-article-description").get(0).child(0).child(0);
+            Elements announcementEls = announceEl.children();
+            // First element is date, second is day, third is just to read all - remove that one
+            SimpleDateFormat announceToDate = new SimpleDateFormat("E, MMMMM d, yyyy", Locale.US);
+            SimpleDateFormat dateToText = new SimpleDateFormat("EE M/d/yy", Locale.US);
+            String unformedDate = htmlToString(announcementEls.get(0));
+//            String announcementDateString = dateToText.format(announceToDate.parse(unformedDate));
+            String announcementDateString = InitialLoader.viewableDate.format(announceToDate.parse(unformedDate));
+            String announcementDayTypeString = htmlToString(announcementEls.get(1));
+            ArrayList<String> announcements = new ArrayList<>(announcementEls.size());
+            for (int c=3; c<announcementEls.size(); c++)
+                announcements.add(htmlToString(announcementEls.get(c)));
+            results.setAnnouncements(announcements);
+            results.setAnnouncementDateString(announcementDateString);
+            results.setAnnouncementDayTypeString(announcementDayTypeString);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+
         publishProgress("Assembling identifier to navigation maps...");
         results.setContentIdToNavId(buildContentIdToNavId());
 
@@ -101,7 +132,6 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         results.setNavIdToClass(buildNavIdToClass());
 
         publishProgress("Assembling navigation to icon maps...");
-        results.setNavIdToBlackIcon(buildNavIdToBlackIcon());
         results.setNavIdToRedIcon(buildNavIdToRedIcon());
 
         publishProgress("Finished!");
@@ -115,8 +145,11 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         textViewRef.get().setText(progress[0]);
     }
 
+    private String htmlToString(Element html){
+        return Html.fromHtml(html.html()).toString();
+    }
 
-    public SparseIntArray buildContentIdToNavId(){
+    private SparseIntArray buildContentIdToNavId(){
         SparseIntArray contentIdToNavId = new SparseIntArray(6);
         contentIdToNavId.put(R.layout.activity_announcement, R.id.nav_announcements);
         contentIdToNavId.put(R.layout.activity_calendar, R.id.nav_calendar);
@@ -127,7 +160,7 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         return contentIdToNavId;
     }
 
-    public SparseIntArray buildContentIdToPos(){
+    private SparseIntArray buildContentIdToPos(){
         SparseIntArray contentIdToPos = new SparseIntArray(6);
         contentIdToPos.put(R.layout.activity_announcement, 0);
         contentIdToPos.put(R.layout.activity_calendar, 1);
@@ -138,7 +171,7 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         return contentIdToPos;
     }
 
-    public SparseArray<Class> buildNavIdToClass() {
+    private SparseArray<Class> buildNavIdToClass() {
         SparseArray<Class> navIdToClass = new SparseArray<>(5);
         navIdToClass.put(R.id.nav_announcements, AnnouncementActivity.class);
         navIdToClass.put(R.id.nav_bell_schedule, ScheduleActivity.class);
@@ -148,17 +181,7 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         return navIdToClass;
     }
 
-    public SparseIntArray buildNavIdToBlackIcon(){
-        SparseIntArray navIdToBlackIcon = new SparseIntArray(5);
-        navIdToBlackIcon.put(R.id.nav_announcements, R.drawable.announcements_icon_black);
-        navIdToBlackIcon.put(R.id.nav_calendar, R.drawable.calendar_icon_black);
-        navIdToBlackIcon.put(R.id.nav_lunch_menu, R.drawable.lunch_menu_black);
-        navIdToBlackIcon.put(R.id.nav_sports, R.drawable.sports_icon_black);
-        navIdToBlackIcon.put(R.id.nav_bell_schedule, R.drawable.schedule_black);
-        return navIdToBlackIcon;
-    }
-
-    public SparseIntArray buildNavIdToRedIcon(){
+    private SparseIntArray buildNavIdToRedIcon(){
         SparseIntArray navIdToRedIcon = new SparseIntArray(5);
         navIdToRedIcon.put(R.id.nav_announcements, R.drawable.announcements_icon_red);
         navIdToRedIcon.put(R.id.nav_calendar, R.drawable.calendar_icon_red);
@@ -172,8 +195,10 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         String ical;
         String[] vevents;
         HashMap<String, ArrayList<EventObject>> eventfulDays;
+        ArrayList<String> announcements;
+        String announcementDateString, announcementDayTypeString;
         byte[] menuBytes;
-        SparseIntArray contentIdToNavId, contentIdToPos, navIdToBlackIcon, navIdToRedIcon;
+        SparseIntArray contentIdToNavId, contentIdToPos, navIdToRedIcon;
         SparseArray<Class> navIdToClass;
 
         void setIcal(String ical){
@@ -182,6 +207,18 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
 
         void setVevents(String[] vevents){
             this.vevents = vevents;
+        }
+
+        void setAnnouncements(ArrayList<String> announcements){
+            this.announcements = announcements;
+        }
+
+        void setAnnouncementDateString(String announcementDateString){
+            this.announcementDateString = announcementDateString;
+        }
+
+        void setAnnouncementDayTypeString(String announcementDayTypeString){
+            this.announcementDayTypeString = announcementDayTypeString;
         }
 
         void setEventfulDays(HashMap<String, ArrayList<EventObject>> eventfulDays){
@@ -198,10 +235,6 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
 
         void setContentIdToPos(SparseIntArray contentIdToPos){
             this.contentIdToPos = contentIdToPos;
-        }
-
-        void setNavIdToBlackIcon(SparseIntArray navIdToBlackIcon){
-            this.navIdToBlackIcon = navIdToBlackIcon;
         }
 
         void setNavIdToRedIcon(SparseIntArray navIdToRedIcon){

@@ -30,6 +30,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import org.json.JSONObject;
@@ -55,23 +56,16 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
         super.onCreate(savedInstanceState);
         setTheme(R.style.AppCompatTheme);
         setContentView(R.layout.activity_sign_in);
-        findViewById(R.id.signIn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String email = ((EditText) findViewById(R.id.email)).getText().toString();
-                String password = ((EditText) findViewById(R.id.password)).getText().toString();
-                handleSignIn(email.equals("no") && password.equals("pass"), BadSignInFragment.BAD_EMAIL_SIGN_IN,
-                        "tgrossberndt@student.bcsdny.org", "Theo Grossberndt", null);
-            }
-        });
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-//                .requestProfile()
+                .requestIdToken(getString(R.string.server_client_id))
+                .requestProfile()
                 .requestEmail()
                 .build();
         signInClient = GoogleSignIn.getClient(this, gso);
-/*
-        googleClient = new GoogleApiClient.Builder(this)
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        handleSignIn(account);
+/*        googleClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -80,8 +74,7 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
                 })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-*/
-        findViewById(R.id.signInWithGoogle).setOnClickListener(new View.OnClickListener() {
+  */      findViewById(R.id.signInWithGoogle).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signInWithGoogle();
@@ -95,7 +88,7 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
             Bundle args = new Bundle();
             args.putInt("cause", BadSignInFragment.BAD_GOOGLE_SIGN_IN);
             badSignInFragment.setArguments(args);
-//            Toast.makeText(this, "Not connected, showing frag", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Not connected, showing frag", Toast.LENGTH_LONG).show();
             badSignInFragment.show(getFragmentManager(), "BadSignIn");
         } else {
 //            googleClient.clearDefaultAccountAndReconnect();
@@ -109,6 +102,9 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1738) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            recievedSignIn(task);
+            /*
             if (resultCode == RESULT_OK) {
 //                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
 //                GoogleSignInAccount account = task.getResult(ApiException.class);
@@ -128,8 +124,9 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
                 handleSignIn(res.isSuccess(), BadSignInFragment.BAD_GOOGLE_SIGN_IN, email, dispName, picURI);
 //                googleClient.clearDefaultAccountAndReconnect();
             } else {
-                Toast.makeText(getApplicationContext(), "Sign in fragment not succesful, " + resultCode, Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Sign in fragment not successful, " + resultCode, Toast.LENGTH_LONG).show();
             }
+*/
         }
     }
 
@@ -137,21 +134,26 @@ public class SignInActivity extends AppCompatActivity implements BadSignInFragme
         ((EditText) findViewById(R.id.password)).setText("");
     }
 
-    public void handleSignIn(boolean goodSignIn, int cause, String email, String dispName, Uri picURI) {
-        //Handle sign in
-        if (!goodSignIn) {
+    public void recievedSignIn(Task<GoogleSignInAccount> recieved){
+        try {
+            GoogleSignInAccount account = recieved.getResult(ApiException.class);
+            handleSignIn(account);
+        } catch (ApiException e){
+            e.printStackTrace();
             BadSignInFragment badSignIn = new BadSignInFragment();
             Bundle args = new Bundle();
-            args.putInt("cause", cause);
+            args.putInt("cause", e.getStatusCode());
             badSignIn.setArguments(args);
             badSignIn.show(getFragmentManager(), "BadSignIn");
-        } else {
-            AccountInfo.signIn(this, email, dispName, 16154, picURI);
-
-            Intent goHome = new Intent(SignInActivity.this, HomeActivity.class);
-            goHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(goHome);
         }
+    }
+
+    public void handleSignIn(GoogleSignInAccount account) {
+        AccountInfo.signIn(this, account.getEmail(), account.getDisplayName(), 16154, account.getPhotoUrl());
+
+        Intent goHome = new Intent(SignInActivity.this, HomeActivity.class);
+        goHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(goHome);
     }
 
 

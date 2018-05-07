@@ -2,6 +2,7 @@ package com.flhs.announcements;
 
 import com.flhs.FLHSActivity;
 import com.flhs.R;
+import com.flhs.preloader.InitialLoader;
 import com.flhs.utils.ConnectionErrorFragment;
 
 import org.jsoup.Jsoup;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 
-public class AnnouncementActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener {
+public class AnnouncementActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener, InitialLoader.OnReloadFinish {
     private TextView date, dayType;
     private RecyclerView announcementsList;
     private ProgressBar mProgress;
@@ -51,99 +52,57 @@ public class AnnouncementActivity extends FLHSActivity implements ConnectionErro
 
         announcementsList = findViewById(R.id.announcements_holder);
         announcementsList.setLayoutManager(new LinearLayoutManager(this));
-/*
-        refresh = findViewById(R.id.refresh);
-        refresh.setVisibility(View.INVISIBLE);
-        refresh.setOnClickListener(new OnClickListener() {
-            public void onClick(View arg0) {
-                tryToConnect();
-            }
-        });
-*/
-        tryToConnect();
 
+        reversePreload();
+        onReloadFinish();
     }
 
     public void tryToConnect() {
         swipeRefreshLayout.setRefreshing(false);
         if (isOnline()) {
-            new AnnouncementParser().execute();
+            preload();
+            // Start loading the events if connected
+            InitialLoader.reload(this, this);
         } else {
-            ConnectionErrorFragment alert = new ConnectionErrorFragment();
-            alert.show(getFragmentManager(), "CONNECTION_ERROR");
-            mProgress.setVisibility(ProgressBar.INVISIBLE);
+            // Show the connection error dialog if not connected
+            ConnectionErrorFragment connectionError = new ConnectionErrorFragment();
+            connectionError.show(getFragmentManager(), "Connection Error");
+            reversePreload();
         }
     }
 
-    private class AnnouncementParser extends AsyncTask<Void, Void, Void> {
-        private String dateString, dayTypeString;
-        private ArrayList<String> announcements;
-        @Override
-        protected void onPreExecute() {
-            date.setText("Loading...");
-            dayType.setVisibility(View.INVISIBLE);
-            AnnouncementsAdapter announcementsAdapter = (AnnouncementsAdapter) announcementsList.getAdapter();
-            if (announcementsAdapter != null)
-                announcementsAdapter.removeAllItems();
-//            refresh.setVisibility(View.INVISIBLE);
-            mProgress.setVisibility(ProgressBar.VISIBLE);
-            dateString = "";
-            dayTypeString = "";
-            announcements = new ArrayList<>();
-        }
+    public void preload() {
+        date.setText("Loading...");
+        dayType.setVisibility(View.INVISIBLE);
+        AnnouncementsAdapter announcementsAdapter = (AnnouncementsAdapter) announcementsList.getAdapter();
+        if (announcementsAdapter != null)
+            announcementsAdapter.removeAllItems();
+        mProgress.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            String url = "https://www.bcsdny.org/domain/154";
-            Document announce = null;
-            try {
-                announce = Jsoup.connect(url).get();
-                Element announceEl = announce.getElementsByClass("ui-article-description").get(0).child(0).child(0);
-                Elements announcementEls = announceEl.children();
-                // First element is date, second is day, third is just to read all - remove that one
-                SimpleDateFormat announceToDate = new SimpleDateFormat("E, MMMMM d, yyyy", Locale.US);
-                SimpleDateFormat dateToText = new SimpleDateFormat("EE M/d/yy", Locale.US);
-                String unformedDate = htmlToString(announcementEls.get(0));
-                dateString = dateToText.format(announceToDate.parse(unformedDate));
-                dayTypeString = htmlToString(announcementEls.get(1));
-                for (int c=3; c<announcementEls.size(); c++)
-                    announcements.add(htmlToString(announcementEls.get(c)));
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                ConnectionErrorFragment alert = new ConnectionErrorFragment();
-                alert.show(getFragmentManager(), "CONNECTION_ERROR");
-            }
+    public void reversePreload() {
+        date.setText(InitialLoader.announcementDateString);
+        dayType.setVisibility(View.VISIBLE);
+        dayType.setText(InitialLoader.announcementDayTypeString);
+        mProgress.setVisibility(View.INVISIBLE);
+    }
 
-            return null;
-        }
+    @Override
+    public void onReloadFinish() {
+        reversePreload();
 
-        private String htmlToString(Element html){
-            return Html.fromHtml(html.html()).toString();
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            date.setText(dateString);
-            dayType.setText(dayTypeString);
-
-            // Convert the list into one card
-            ArrayList<String> announcementContainer = new ArrayList<>(1);
-            String announcement = "";
-            for (String announcementLine : announcements)
-                announcement += announcementLine + "\n\n";
-            if (announcements.size() > 0)
-                announcementContainer.add(announcement.substring(0, announcement.length()-4));
-            else
-                announcementContainer.add("Couldn't connect to bcsdny.org");
-            AnnouncementsAdapter announcementsAdapter = new AnnouncementsAdapter(announcementContainer, getResources().getColor(R.color.soft_red));
-            announcementsList.setAdapter(announcementsAdapter);
-
-            announcementsList.setClickable(false);
-            dayType.setVisibility(View.VISIBLE);
-            mProgress.setVisibility(ProgressBar.INVISIBLE);
-//            refresh.setVisibility(View.VISIBLE);
-//            swipeRefreshLayout.setRefreshing(false);
-        }
+        // Convert the list into one card
+        ArrayList<String> announcementContainer = new ArrayList<>(1);
+        String announcement = "";
+        for (String announcementLine : InitialLoader.announcements)
+            announcement += announcementLine + "\n\n";
+        if (InitialLoader.announcements.size() > 0)
+            announcementContainer.add(announcement.substring(0, announcement.length()-4));
+        else
+            announcementContainer.add("Couldn't connect to bcsdny.org");
+        AnnouncementsAdapter announcementsAdapter = new AnnouncementsAdapter(announcementContainer, getResources().getColor(R.color.soft_red));
+        announcementsList.setAdapter(announcementsAdapter);
+        announcementsList.setClickable(false);
     }
 
     @Override

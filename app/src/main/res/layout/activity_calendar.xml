@@ -32,7 +32,7 @@
                         android:id="@+id/dateHeader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Date Here..."
+                        android:text="Loading..."
                         android:textColor="@color/black"
                         android:textSize="@dimen/headerpt" />
 

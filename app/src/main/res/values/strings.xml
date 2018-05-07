@@ -29,6 +29,7 @@
     <string name="parse_client_key">t74traBeFuTr</string>
     <string name="student_info_loc">***CONFIDENTIAL***</string>
     <string name="signed_in_loc">signInSuccess</string>
+    <string name="server_client_id">184909607443-vp2vr306i253pgstqsgk6u3fco9d2onn.apps.googleusercontent.com</string>
     <string-array name="lunch_items">
         <item>Early Lunch</item>
         <item>Middle Lunch</item>

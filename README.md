@@ -1,11 +1,7 @@
 ## Welcome to version 2.0
-This is the almost completely redone version of the android app.  It does not yet include user sign in, and I am working on moving async downloads 
-to a loading screen at the begining with nice, scrolling images.  However, the home screen, calendar, and announcements are reworked completely, especially 
-the calendar.  Lunch menu is also fixed, but currently using an external library.  I would love to get the pdf viewing using native libraries. Once these things are done, 2.0 will be ready for release!
-
-## Neeeeewwwwww BUG
-The navigation drawer item selection is suuuppppeeeerr buggy right now.  It's too late for me to finish fixing it though tonight, because I think it might need an in depth tracking to figure 
-out the logic of the switches.  Yay.
+This is the completely redone version of the Android FLHS Information App!!!! It now includes a completely redone home page, announcements page, and calendar.  Not to 
+mension, loading is exported to the begining of the application.  And oh yeah, google sign in is working.  It is far too late, and this is all I have been doing for the past 
+few hours, so I'm calling it a night.  However, sign in still needs to be placed properly into the loading process.
 
 ## AndroidFLHSApp Directory Organization
 This is the source code for the unpackaged Android App.

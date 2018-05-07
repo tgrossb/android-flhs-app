@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.flhs.FLHSActivity;
 import com.flhs.R;
+import com.flhs.SignInActivity;
 import com.flhs.home.HomeActivity;
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.EventObject;
@@ -42,8 +43,10 @@ public class InitialLoader extends AppCompatActivity implements LoaderThread.OnF
     public static Calendar firstCalendarDay, lastCalendarDay;
     public static long firstCalendarDayMS, lastCalendarDayMS;
     public static HashMap<String, ArrayList<EventObject>> eventfulDays;
+    public static ArrayList<String> announcements;
+    public static String announcementDateString, announcementDayTypeString;
     public static byte[] menuBytes;
-    public static SparseIntArray contentIdToNavId, contentIdToPos, navIdToBlackIcon, navIdToRedIcon;
+    public static SparseIntArray contentIdToNavId, contentIdToPos, navIdToRedIcon;
     public static SparseArray<Class> navIdToClass;
 
     public static final SimpleDateFormat viewableDate = new SimpleDateFormat("EE MMMM d, yyyy", Locale.US);
@@ -107,7 +110,8 @@ public class InitialLoader extends AppCompatActivity implements LoaderThread.OnF
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent goHome = new Intent(InitialLoader.this, HomeActivity.class);
+//                Intent goHome = new Intent(InitialLoader.this, HomeActivity.class);
+                Intent goHome = new Intent(InitialLoader.this, SignInActivity.class);
                 goHome.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(goHome);
             }
@@ -118,10 +122,12 @@ public class InitialLoader extends AppCompatActivity implements LoaderThread.OnF
         InitialLoader.ical = resultBundle.ical;
         InitialLoader.vevents = resultBundle.vevents;
         InitialLoader.eventfulDays = resultBundle.eventfulDays;
+        InitialLoader.announcements = resultBundle.announcements;
+        InitialLoader.announcementDateString = resultBundle.announcementDateString;
+        InitialLoader.announcementDayTypeString = resultBundle.announcementDayTypeString;
         InitialLoader.menuBytes = resultBundle.menuBytes;
         InitialLoader.contentIdToNavId = resultBundle.contentIdToNavId;
         InitialLoader.contentIdToPos = resultBundle.contentIdToPos;
-        InitialLoader.navIdToBlackIcon = resultBundle.navIdToBlackIcon;
         InitialLoader.navIdToRedIcon = resultBundle.navIdToRedIcon;
         InitialLoader.navIdToClass = resultBundle.navIdToClass;
 
