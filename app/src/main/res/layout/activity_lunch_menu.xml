@@ -14,8 +14,7 @@
             android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/gray"
-            android:padding="@dimen/activity_vertical_margin">
+            android:background="@color/gray">
 
             <RelativeLayout
                 android:layout_width="match_parent"

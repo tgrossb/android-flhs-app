@@ -1,7 +1,9 @@
 package com.flhs.preloader;
 
 import android.app.DownloadManager;
+import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.text.Html;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -19,6 +21,9 @@ import com.flhs.calendar.CalendarActivity;
 import com.flhs.utils.ConnectionErrorFragment;
 import com.flhs.utils.EventObject;
 import com.flhs.utils.ParserA;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.common.util.IOUtils;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 
@@ -32,8 +37,10 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -41,14 +48,16 @@ import java.util.Locale;
 public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBundle> {
     public static final ResultBundle FAIL = null;
     private OnFinish finished;
+    private WeakReference<Context> contextRef;
     private WeakReference<TextView> textViewRef;
 
     public interface OnFinish {
         void onFinish(ResultBundle results);
     }
 
-    public LoaderThread(OnFinish finished, WeakReference<TextView> textViewRef){
+    public LoaderThread(OnFinish finished, WeakReference<Context> contextRef, WeakReference<TextView> textViewRef){
         this.finished = finished;
+        this.contextRef = contextRef;
         this.textViewRef = textViewRef;
     }
 
@@ -69,19 +78,109 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
 
         publishProgress("Loading calendars from BCSD...");
         String ical = ParserA.readCalendar(ParserA.DISTRICT_CALENDAR);
-        results.setIcal(ical);
+        results.ical = ical;
 
         publishProgress("Parsing calendars...");
         String[] vevents = ical.split("END:VEVENT\nBEGIN:VEVENT");
         int firstStart = vevents[0].indexOf("BEGIN:VEVENT");
         vevents[0] = vevents[0].substring(firstStart + 12);
-        results.setVevents(vevents);
+        results.vevents = vevents;
 
         publishProgress("Loading eventful days from BCSD...");
-        HashMap<String, ArrayList<EventObject>> eventfulDays = ParserA.getEventfulDays(vevents);
-        results.setEventfulDays(eventfulDays);
+        results.eventfulDays = ParserA.getEventfulDays(vevents);
+
+        publishProgress("Finding calendar start and stop days...");
+        extractDays(results, vevents);
 
         publishProgress("Loading lunch menu from BCSD...");
+        loadLunchMenu(results);
+
+        publishProgress("Loading announcements from BCSD...");
+        loadAnnouncements(results);
+
+        publishProgress("Assembling identifier to navigation maps...");
+        results.contentIdToNavId = buildContentIdToNavId();
+
+        publishProgress("Assembling identifier to position maps...");
+        results.contentIdToPos = buildContentIdToPos();
+
+        publishProgress("Assembling navigation to class maps...");
+        results.navIdToClass = buildNavIdToClass();
+
+        publishProgress("Assembling navigation to icon maps...");
+        results.navIdToRedIcon = buildNavIdToRedIcon();
+
+        publishProgress("Looking for signed in accounts...");
+        results.googleAccount = GoogleSignIn.getLastSignedInAccount(contextRef.get());
+
+        publishProgress("Finished!");
+        return results;
+    }
+
+    @Override
+    public void onProgressUpdate(String... progress){
+        if (textViewRef == null || textViewRef.get() == null)
+            return;
+        textViewRef.get().setText(progress[0]);
+    }
+
+    private void extractDays(ResultBundle resultBundle, String[] vevents){
+        Date today = new Date();
+        Calendar nowCal = Calendar.getInstance();
+        nowCal.setTime(today);
+
+        Calendar firstCalendarDay = Calendar.getInstance();
+        firstCalendarDay.setTime(today);
+        firstCalendarDay.set(Calendar.MONTH, Calendar.SEPTEMBER);
+        firstCalendarDay.set(Calendar.DAY_OF_MONTH, firstCalendarDay.getActualMinimum(Calendar.DAY_OF_MONTH));
+        if (nowCal.before(firstCalendarDay))
+            firstCalendarDay.roll(Calendar.YEAR, -1);
+
+        Calendar lastCalendarDay = Calendar.getInstance();
+        lastCalendarDay.setTime(today);
+        lastCalendarDay.set(Calendar.MONTH, Calendar.JUNE);
+        lastCalendarDay.set(Calendar.DAY_OF_MONTH, lastCalendarDay.getActualMaximum(Calendar.DAY_OF_MONTH));
+        if (nowCal.after(lastCalendarDay))
+            lastCalendarDay.roll(Calendar.YEAR, 1);
+
+        for (String vevent : vevents) {
+            String dtstart = ParserA.getValue(vevent, "DTSTART:");
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd", Locale.US);
+            Date start = new Date();
+            try {
+                start = format.parse(dtstart);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Date end = ParserA.getEventEndDate(vevent, start);
+            Calendar startCal = Calendar.getInstance();
+            startCal.setTime(start);
+            Calendar endCal = Calendar.getInstance();
+            endCal.setTime(end);
+            if (firstCalendarDay.after(startCal))
+                firstCalendarDay.setTime(start);
+            if (lastCalendarDay.before(endCal))
+                lastCalendarDay.setTime(end);
+        }
+        firstCalendarDay.set(Calendar.DAY_OF_MONTH, firstCalendarDay.getActualMinimum(Calendar.DAY_OF_MONTH));
+        lastCalendarDay.set(Calendar.DAY_OF_MONTH, lastCalendarDay.getActualMaximum(Calendar.DAY_OF_MONTH));
+        setToMidnight(firstCalendarDay);
+        setToMidnight(lastCalendarDay);
+
+        resultBundle.firstCalendarDay = firstCalendarDay;
+        resultBundle.lastCalendarDay = lastCalendarDay;
+        resultBundle.firstCalendarDayMS = firstCalendarDay.getTimeInMillis();
+        resultBundle.lastCalendarDayMS = lastCalendarDay.getTimeInMillis();
+    }
+
+    private static void setToMidnight(Calendar cal){
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+    }
+
+    private void loadLunchMenu(ResultBundle resultBundle){
         byte[] menuBytes = null;
         try {
             SimpleDateFormat urlForm = new SimpleDateFormat("MMMMyyyy'MSHS'", Locale.US);
@@ -96,9 +195,10 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
             System.out.println("Error loading menu");
             e.printStackTrace();
         }
-        results.setMenuBytes(menuBytes);
+        resultBundle.menuBytes = menuBytes;
+    }
 
-        publishProgress("Loading announcements from BCSD...");
+    private void loadAnnouncements(ResultBundle resultBundle){
         String url = "https://www.bcsdny.org/domain/154";
         Document announce;
         try {
@@ -115,34 +215,12 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
             ArrayList<String> announcements = new ArrayList<>(announcementEls.size());
             for (int c=3; c<announcementEls.size(); c++)
                 announcements.add(htmlToString(announcementEls.get(c)));
-            results.setAnnouncements(announcements);
-            results.setAnnouncementDateString(announcementDateString);
-            results.setAnnouncementDayTypeString(announcementDayTypeString);
+            resultBundle.announcements = announcements;
+            resultBundle.announcementDateString = announcementDateString;
+            resultBundle.announcementDayTypeString = announcementDayTypeString;
         } catch (Exception e1) {
             e1.printStackTrace();
         }
-
-        publishProgress("Assembling identifier to navigation maps...");
-        results.setContentIdToNavId(buildContentIdToNavId());
-
-        publishProgress("Assembling identifier to position maps...");
-        results.setContentIdToPos(buildContentIdToPos());
-
-        publishProgress("Assembling navigation to class maps...");
-        results.setNavIdToClass(buildNavIdToClass());
-
-        publishProgress("Assembling navigation to icon maps...");
-        results.setNavIdToRedIcon(buildNavIdToRedIcon());
-
-        publishProgress("Finished!");
-        return results;
-    }
-
-    @Override
-    public void onProgressUpdate(String... progress){
-        if (textViewRef == null || textViewRef.get() == null)
-            return;
-        textViewRef.get().setText(progress[0]);
     }
 
     private String htmlToString(Element html){
@@ -195,54 +273,13 @@ public class LoaderThread extends AsyncTask<Void, String, LoaderThread.ResultBun
         String ical;
         String[] vevents;
         HashMap<String, ArrayList<EventObject>> eventfulDays;
+        Calendar firstCalendarDay, lastCalendarDay;
+        long firstCalendarDayMS, lastCalendarDayMS;
         ArrayList<String> announcements;
         String announcementDateString, announcementDayTypeString;
         byte[] menuBytes;
         SparseIntArray contentIdToNavId, contentIdToPos, navIdToRedIcon;
         SparseArray<Class> navIdToClass;
-
-        void setIcal(String ical){
-            this.ical = ical;
-        }
-
-        void setVevents(String[] vevents){
-            this.vevents = vevents;
-        }
-
-        void setAnnouncements(ArrayList<String> announcements){
-            this.announcements = announcements;
-        }
-
-        void setAnnouncementDateString(String announcementDateString){
-            this.announcementDateString = announcementDateString;
-        }
-
-        void setAnnouncementDayTypeString(String announcementDayTypeString){
-            this.announcementDayTypeString = announcementDayTypeString;
-        }
-
-        void setEventfulDays(HashMap<String, ArrayList<EventObject>> eventfulDays){
-            this.eventfulDays = eventfulDays;
-        }
-
-        void setMenuBytes(byte[] menuBytes){
-            this.menuBytes = menuBytes;
-        }
-
-        void setContentIdToNavId(SparseIntArray contentIdToNavId){
-            this.contentIdToNavId = contentIdToNavId;
-        }
-
-        void setContentIdToPos(SparseIntArray contentIdToPos){
-            this.contentIdToPos = contentIdToPos;
-        }
-
-        void setNavIdToRedIcon(SparseIntArray navIdToRedIcon){
-            this.navIdToRedIcon = navIdToRedIcon;
-        }
-
-        void setNavIdToClass(SparseArray<Class> navIdToClass){
-            this.navIdToClass = navIdToClass;
-        }
+        GoogleSignInAccount googleAccount;
     }
 }

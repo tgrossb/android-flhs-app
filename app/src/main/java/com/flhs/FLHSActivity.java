@@ -82,7 +82,7 @@ public class FLHSActivity extends AppCompatActivity implements NavigationView.On
         TextView nameSpot = view.findViewById(R.id.nav_header_name);
         nameSpot.setText(AccountInfo.getDispName(this));
         TextView emailSpot = view.findViewById(R.id.nav_header_email);
-        emailSpot.setText(AccountInfo.getEmail(this).substring(0, AccountInfo.getEmail(this).indexOf("@")));
+        emailSpot.setText(AccountInfo.getEmail(this));
 //        TextViewCompat.setAutoSizeTextTypeWithDefaults(emailSpot, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM);
 //        emailSpot.setMaxWidth(imageSpot.getWidth());
 //        view.invalidate();

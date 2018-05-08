@@ -8,7 +8,6 @@ import java.util.Locale;
 
 import com.flhs.FLHSActivity;
 import com.flhs.R;
-import com.flhs.SignInActivity;
 import com.flhs.preloader.InitialLoader;
 import com.flhs.preloader.LoaderThread;
 import com.flhs.utils.AccountInfo;
@@ -35,8 +34,6 @@ import android.widget.Toast;
 
 
 public class HomeActivity extends FLHSActivity implements ConnectionErrorFragment.AlertDialogListener, InitialLoader.OnReloadFinish {
-    public static boolean noSignIn = true;
-    public static boolean dontRemember = true;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar mProgress;
     public TextView dateView;
@@ -45,13 +42,6 @@ public class HomeActivity extends FLHSActivity implements ConnectionErrorFragmen
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState, R.layout.activity_home);
-
-        //Before anything happens, check if the user is signed in
-        if (!noSignIn && (!AccountInfo.isSignedIn(this) || dontRemember)){
-            Intent signIn = new Intent(this, SignInActivity.class);
-            signIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(signIn);
-        }
 
         mProgress = findViewById(R.id.progress_bar);
         swipeRefreshLayout = findViewById(R.id.swiperefresh);

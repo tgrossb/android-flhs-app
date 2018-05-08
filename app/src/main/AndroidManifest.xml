@@ -76,10 +76,6 @@
             android:parentActivityName="com.flhs.home.HomeActivity">
         </activity>
         <activity
-            android:name="com.flhs.SignInActivity"
-            android:label="@string/title_activity_sign_in">
-        </activity>
-        <activity
             android:name="com.flhs.CourseSelectorActivity"
             android:label="@string/title_activity_course_selector"
             android:parentActivityName="com.flhs.ScheduleActivity"

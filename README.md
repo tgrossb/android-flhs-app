@@ -1,3 +1,7 @@
+## Progress
+[-] <b>5/7</b> Sign in is completely integrated.  Need to fix the AccountInfo storing locally and would love to remove a few library dependencies.  Also, updated 
+the nav header so it looks pretty good.  Done for the night.
+
 ## Welcome to version 2.0
 This is the completely redone version of the Android FLHS Information App!!!! It now includes a completely redone home page, announcements page, and calendar.  Not to 
 mension, loading is exported to the begining of the application.  And oh yeah, google sign in is working.  It is far too late, and this is all I have been doing for the past 
